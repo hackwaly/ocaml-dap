@@ -1,8 +1,9 @@
 (** The Debug Adapter Protocol defines the protocol used between an editor or IDE and a debugger or runtime. *)
 (* Auto-generated from json schema. Do not edit manually. *)
 
-open Dap_util
-include Dap_types
+open Util
+
+include Debug_protocol_types
 
 module Protocol_message = struct
   module Type = struct
@@ -48,11 +49,11 @@ module Request = struct
 
   end
 
-  type t = {
+  type 'a t = {
     seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
     type_ : Type.t [@key "type"];
     command : string; (** The command to execute. *)
-    arguments : Any.t option [@default None]; (** Object containing arguments for the command. *)
+    arguments : 'a option [@default None]; (** Object containing arguments for the command. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -71,11 +72,11 @@ module Event = struct
 
   end
 
-  type t = {
+  type 'a t = {
     seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
     type_ : Type.t [@key "type"];
     event : string; (** Type of event. *)
-    body : Any.t option [@default None]; (** Event-specific information. *)
+    body : 'a option [@default None]; (** Event-specific information. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -111,7 +112,7 @@ module Response = struct
       | Custom str -> `String str
   end
 
-  type t = {
+  type 'a t = {
     seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
     type_ : Type.t [@key "type"];
     request_seq : int; (** Sequence number of the corresponding request. *)
@@ -122,7 +123,7 @@ module Response = struct
     message : Message.t option [@default None]; (** Contains the raw error in short form if 'success' is false.
     This raw error might be interpreted by the frontend and is not shown in the UI.
     Some predefined values exist. *)
-    body : Any.t option [@default None]; (** Contains request result if success is true and optional error details if success is false. *)
+    body : 'a option [@default None]; (** Contains request result if success is true and optional error details if success is false. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -957,16 +958,19 @@ module Invalidated_areas = struct
 end
 
 module Initialized_event = struct
-  let event = "initialized"
+  let type_ = "initialized"
 
   module Body = struct
     type t = Empty_dict.t
     [@@deriving yojson]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Stopped_event = struct
-  let event = "stopped"
+  let type_ = "stopped"
 
   module Body = struct
     module Reason = struct
@@ -1022,10 +1026,13 @@ module Stopped_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Continued_event = struct
-  let event = "continued"
+  let type_ = "continued"
 
   module Body = struct
     type t = {
@@ -1034,10 +1041,13 @@ module Continued_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Exited_event = struct
-  let event = "exited"
+  let type_ = "exited"
 
   module Body = struct
     type t = {
@@ -1045,10 +1055,13 @@ module Exited_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Terminated_event = struct
-  let event = "terminated"
+  let type_ = "terminated"
 
   module Body = struct
     type t = {
@@ -1057,10 +1070,13 @@ module Terminated_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Thread_event = struct
-  let event = "thread"
+  let type_ = "thread"
 
   module Body = struct
     module Reason = struct
@@ -1087,10 +1103,13 @@ module Thread_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Output_event = struct
-  let event = "output"
+  let type_ = "output"
 
   module Body = struct
     module Category = struct
@@ -1149,10 +1168,13 @@ module Output_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Breakpoint_event = struct
-  let event = "breakpoint"
+  let type_ = "breakpoint"
 
   module Body = struct
     module Reason = struct
@@ -1182,10 +1204,13 @@ module Breakpoint_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Module_event = struct
-  let event = "module"
+  let type_ = "module"
 
   module Body = struct
     module Reason = struct
@@ -1214,10 +1239,13 @@ module Module_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Loaded_source_event = struct
-  let event = "loadedSource"
+  let type_ = "loadedSource"
 
   module Body = struct
     module Reason = struct
@@ -1246,10 +1274,13 @@ module Loaded_source_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Process_event = struct
-  let event = "process"
+  let type_ = "process"
 
   module Body = struct
     module Start_method = struct
@@ -1281,10 +1312,13 @@ module Process_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Capabilities_event = struct
-  let event = "capabilities"
+  let type_ = "capabilities"
 
   module Body = struct
     type t = {
@@ -1292,10 +1326,13 @@ module Capabilities_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Progress_start_event = struct
-  let event = "progressStart"
+  let type_ = "progressStart"
 
   module Body = struct
     type t = {
@@ -1313,10 +1350,13 @@ module Progress_start_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Progress_update_event = struct
-  let event = "progressUpdate"
+  let type_ = "progressUpdate"
 
   module Body = struct
     type t = {
@@ -1326,10 +1366,13 @@ module Progress_update_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Progress_end_event = struct
-  let event = "progressEnd"
+  let type_ = "progressEnd"
 
   module Body = struct
     type t = {
@@ -1338,10 +1381,13 @@ module Progress_end_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
 module Invalidated_event = struct
-  let event = "invalidated"
+  let type_ = "invalidated"
 
   module Body = struct
     type t = {
@@ -1351,21 +1397,32 @@ module Invalidated_event = struct
     }
     [@@deriving make, yojson {strict = false}]
   end
+
+  type t = Body.t Event.t
+  [@@deriving yojson]
 end
 
-module Error_request = struct
-  let command = "error"
+module Error_command = struct
+  let type_ = "error"
 
-  module Arguments = struct
-    type t = Empty_dict.t
+  module Request = struct
+    module Arguments = struct
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Arguments.t Request.t
     [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      error : Message.t option [@default None]; (** An optional, structured error message. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
@@ -1380,22 +1437,38 @@ or an error response ('success' attribute false and the 'message' set to 'cancel
 Returning partial results from a cancelled request is possible but please note that a frontend client has no generic way for detecting that a response is partial or not.
  The progress that got cancelled still needs to send a 'progressEnd' event back.
  A client should not assume that progress just got cancelled after sending the 'cancel' request. *)
-module Cancel_request = struct
-  let command = "cancel"
+module Cancel_command = struct
+  let type_ = "cancel"
 
-  module Arguments = struct
-    (** Arguments for 'cancel' request. *)
-    type t = {
-      request_id : int option [@key "requestId"] [@default None]; (** The ID (attribute 'seq') of the request to cancel. If missing no request is cancelled.
-      Both a 'requestId' and a 'progressId' can be specified in one request. *)
-      progress_id : string option [@key "progressId"] [@default None]; (** The ID (attribute 'progressId') of the progress to cancel. If missing no progress is cancelled.
-      Both a 'requestId' and a 'progressId' can be specified in one request. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'cancel' request. *)
+      type t = {
+        request_id : int option [@key "requestId"] [@default None]; (** The ID (attribute 'seq') of the request to cancel. If missing no request is cancelled.
+        Both a 'requestId' and a 'progressId' can be specified in one request. *)
+        progress_id : string option [@key "progressId"] [@default None]; (** The ID (attribute 'progressId') of the progress to cancel. If missing no progress is cancelled.
+        Both a 'requestId' and a 'progressId' can be specified in one request. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'cancel' request. *)
+      type t = {
+        request_id : int option [@key "requestId"] [@default None]; (** The ID (attribute 'seq') of the request to cancel. If missing no request is cancelled.
+        Both a 'requestId' and a 'progressId' can be specified in one request. *)
+        progress_id : string option [@key "progressId"] [@default None]; (** The ID (attribute 'progressId') of the progress to cancel. If missing no progress is cancelled.
+        Both a 'requestId' and a 'progressId' can be specified in one request. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
@@ -1403,50 +1476,87 @@ end
 (** This optional request is sent from the debug adapter to the client to run a command in a terminal.
 This is typically used to launch the debuggee in a terminal provided by the client.
 This request should only be called if the client has passed the value true for the 'supportsRunInTerminalRequest' capability of the 'initialize' request. *)
-module Run_in_terminal_request = struct
-  let command = "runInTerminal"
+module Run_in_terminal_command = struct
+  let type_ = "runInTerminal"
 
-  module Arguments = struct
-    module Kind = struct
-      (** What kind of terminal to launch. *)
-      type t =
-        | Integrated [@name "integrated"]
-        | External [@name "external"]
+  module Request = struct
+    module Arguments = struct
+      module Kind = struct
+        (** What kind of terminal to launch. *)
+        type t =
+          | Integrated [@name "integrated"]
+          | External [@name "external"]
 
-      let of_yojson = function
-        | `String "integrated" -> Ok Integrated
-        | `String "external" -> Ok External
-        | _ -> Error (print_exn_at_loc [%here])
+        let of_yojson = function
+          | `String "integrated" -> Ok Integrated
+          | `String "external" -> Ok External
+          | _ -> Error (print_exn_at_loc [%here])
 
-      let to_yojson = function
-        | Integrated -> `String "integrated" 
-        | External -> `String "external" 
+        let to_yojson = function
+          | Integrated -> `String "integrated" 
+          | External -> `String "external" 
 
+      end
+
+      module Env = struct
+        (** Environment key-value pairs that are added to or removed from the default environment. *)
+        type t = Empty_dict.t
+        [@@deriving yojson]
+      end
+
+      (** Arguments for 'runInTerminal' request. *)
+      type t = {
+        kind : Kind.t option [@default None]; (** What kind of terminal to launch. *)
+        title : string option [@default None]; (** Optional title of the terminal. *)
+        cwd : string; (** Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command. *)
+        args : string; (** List of arguments. The first argument is the command to run. *)
+        env : Env.t option [@default None]; (** Environment key-value pairs that are added to or removed from the default environment. *)
+      }
+      [@@deriving make, yojson {strict = false}]
     end
 
-    module Env = struct
-      (** Environment key-value pairs that are added to or removed from the default environment. *)
-      type t = Empty_dict.t
-      [@@deriving yojson]
-    end
-
-    (** Arguments for 'runInTerminal' request. *)
-    type t = {
-      kind : Kind.t option [@default None]; (** What kind of terminal to launch. *)
-      title : string option [@default None]; (** Optional title of the terminal. *)
-      cwd : string; (** Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command. *)
-      args : string; (** List of arguments. The first argument is the command to run. *)
-      env : Env.t option [@default None]; (** Environment key-value pairs that are added to or removed from the default environment. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      process_id : int option [@key "processId"] [@default None]; (** The process ID. The value should be less than or equal to 2147483647 (2^31-1). *)
-      shell_process_id : int option [@key "shellProcessId"] [@default None]; (** The process ID of the terminal shell. The value should be less than or equal to 2147483647 (2^31-1). *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      module Kind = struct
+        (** What kind of terminal to launch. *)
+        type t =
+          | Integrated [@name "integrated"]
+          | External [@name "external"]
+
+        let of_yojson = function
+          | `String "integrated" -> Ok Integrated
+          | `String "external" -> Ok External
+          | _ -> Error (print_exn_at_loc [%here])
+
+        let to_yojson = function
+          | Integrated -> `String "integrated" 
+          | External -> `String "external" 
+
+      end
+
+      module Env = struct
+        (** Environment key-value pairs that are added to or removed from the default environment. *)
+        type t = Empty_dict.t
+        [@@deriving yojson]
+      end
+
+      (** Arguments for 'runInTerminal' request. *)
+      type t = {
+        kind : Kind.t option [@default None]; (** What kind of terminal to launch. *)
+        title : string option [@default None]; (** Optional title of the terminal. *)
+        cwd : string; (** Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command. *)
+        args : string; (** List of arguments. The first argument is the command to run. *)
+        env : Env.t option [@default None]; (** Environment key-value pairs that are added to or removed from the default environment. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
@@ -1455,165 +1565,223 @@ in order to configure it with client capabilities and to retrieve capabilities f
 Until the debug adapter has responded to with an 'initialize' response, the client must not send any additional requests or events to the debug adapter.
 In addition the debug adapter is not allowed to send any requests or events to the client until it has responded with an 'initialize' response.
 The 'initialize' request may only be sent once. *)
-module Initialize_request = struct
-  let command = "initialize"
+module Initialize_command = struct
+  let type_ = "initialize"
 
-  module Arguments = struct
-    module Path_format = struct
-      (** Determines in what format paths are specified. The default is 'path', which is the native format. *)
-      type t =
-        | Path [@name "path"]
-        | Uri [@name "uri"]
-        | Custom of string
+  module Request = struct
+    module Arguments = struct
+      module Path_format = struct
+        (** Determines in what format paths are specified. The default is 'path', which is the native format. *)
+        type t =
+          | Path [@name "path"]
+          | Uri [@name "uri"]
+          | Custom of string
 
-      let of_yojson = function
-        | `String "path" -> Ok Path
-        | `String "uri" -> Ok Uri
-        | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
+        let of_yojson = function
+          | `String "path" -> Ok Path
+          | `String "uri" -> Ok Uri
+          | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
-      let to_yojson = function
-        | Path -> `String "path" 
-        | Uri -> `String "uri" 
-        | Custom str -> `String str
+        let to_yojson = function
+          | Path -> `String "path" 
+          | Uri -> `String "uri" 
+          | Custom str -> `String str
+      end
+
+      (** Arguments for 'initialize' request. *)
+      type t = {
+        client_id : string option [@key "clientID"] [@default None]; (** The ID of the (frontend) client using this adapter. *)
+        client_name : string option [@key "clientName"] [@default None]; (** The human readable name of the (frontend) client using this adapter. *)
+        adapter_id : string [@key "adapterID"]; (** The ID of the debug adapter. *)
+        locale : string option [@default None]; (** The ISO-639 locale of the (frontend) client using this adapter, e.g. en-US or de-CH. *)
+        lines_start_at1 : bool option [@key "linesStartAt1"] [@default None]; (** If true all line numbers are 1-based (default). *)
+        columns_start_at1 : bool option [@key "columnsStartAt1"] [@default None]; (** If true all column numbers are 1-based (default). *)
+        path_format : Path_format.t option [@key "pathFormat"] [@default None]; (** Determines in what format paths are specified. The default is 'path', which is the native format. *)
+        supports_variable_type : bool option [@key "supportsVariableType"] [@default None]; (** Client supports the optional type attribute for variables. *)
+        supports_variable_paging : bool option [@key "supportsVariablePaging"] [@default None]; (** Client supports the paging of variables. *)
+        supports_run_in_terminal_request : bool option [@key "supportsRunInTerminalRequest"] [@default None]; (** Client supports the runInTerminal request. *)
+        supports_memory_references : bool option [@key "supportsMemoryReferences"] [@default None]; (** Client supports memory references. *)
+        supports_progress_reporting : bool option [@key "supportsProgressReporting"] [@default None]; (** Client supports progress reporting. *)
+        supports_invalidated_event : bool option [@key "supportsInvalidatedEvent"] [@default None]; (** Client supports the invalidated event. *)
+      }
+      [@@deriving make, yojson {strict = false}]
     end
 
-    (** Arguments for 'initialize' request. *)
-    type t = {
-      client_id : string option [@key "clientID"] [@default None]; (** The ID of the (frontend) client using this adapter. *)
-      client_name : string option [@key "clientName"] [@default None]; (** The human readable name of the (frontend) client using this adapter. *)
-      adapter_id : string [@key "adapterID"]; (** The ID of the debug adapter. *)
-      locale : string option [@default None]; (** The ISO-639 locale of the (frontend) client using this adapter, e.g. en-US or de-CH. *)
-      lines_start_at1 : bool option [@key "linesStartAt1"] [@default None]; (** If true all line numbers are 1-based (default). *)
-      columns_start_at1 : bool option [@key "columnsStartAt1"] [@default None]; (** If true all column numbers are 1-based (default). *)
-      path_format : Path_format.t option [@key "pathFormat"] [@default None]; (** Determines in what format paths are specified. The default is 'path', which is the native format. *)
-      supports_variable_type : bool option [@key "supportsVariableType"] [@default None]; (** Client supports the optional type attribute for variables. *)
-      supports_variable_paging : bool option [@key "supportsVariablePaging"] [@default None]; (** Client supports the paging of variables. *)
-      supports_run_in_terminal_request : bool option [@key "supportsRunInTerminalRequest"] [@default None]; (** Client supports the runInTerminal request. *)
-      supports_memory_references : bool option [@key "supportsMemoryReferences"] [@default None]; (** Client supports memory references. *)
-      supports_progress_reporting : bool option [@key "supportsProgressReporting"] [@default None]; (** Client supports progress reporting. *)
-      supports_invalidated_event : bool option [@key "supportsInvalidatedEvent"] [@default None]; (** Client supports the invalidated event. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    (** Information about the capabilities of a debug adapter. *)
-    type t = {
-      supports_configuration_done_request : bool option [@key "supportsConfigurationDoneRequest"] [@default None]; (** The debug adapter supports the 'configurationDone' request. *)
-      supports_function_breakpoints : bool option [@key "supportsFunctionBreakpoints"] [@default None]; (** The debug adapter supports function breakpoints. *)
-      supports_conditional_breakpoints : bool option [@key "supportsConditionalBreakpoints"] [@default None]; (** The debug adapter supports conditional breakpoints. *)
-      supports_hit_conditional_breakpoints : bool option [@key "supportsHitConditionalBreakpoints"] [@default None]; (** The debug adapter supports breakpoints that break execution after a specified number of hits. *)
-      supports_evaluate_for_hovers : bool option [@key "supportsEvaluateForHovers"] [@default None]; (** The debug adapter supports a (side effect free) evaluate request for data hovers. *)
-      exception_breakpoint_filters : Exception_breakpoints_filter.t option [@key "exceptionBreakpointFilters"] [@default None]; (** Available exception filter options for the 'setExceptionBreakpoints' request. *)
-      supports_step_back : bool option [@key "supportsStepBack"] [@default None]; (** The debug adapter supports stepping back via the 'stepBack' and 'reverseContinue' requests. *)
-      supports_set_variable : bool option [@key "supportsSetVariable"] [@default None]; (** The debug adapter supports setting a variable to a value. *)
-      supports_restart_frame : bool option [@key "supportsRestartFrame"] [@default None]; (** The debug adapter supports restarting a frame. *)
-      supports_goto_targets_request : bool option [@key "supportsGotoTargetsRequest"] [@default None]; (** The debug adapter supports the 'gotoTargets' request. *)
-      supports_step_in_targets_request : bool option [@key "supportsStepInTargetsRequest"] [@default None]; (** The debug adapter supports the 'stepInTargets' request. *)
-      supports_completions_request : bool option [@key "supportsCompletionsRequest"] [@default None]; (** The debug adapter supports the 'completions' request. *)
-      completion_trigger_characters : string option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the '.' character. *)
-      supports_modules_request : bool option [@key "supportsModulesRequest"] [@default None]; (** The debug adapter supports the 'modules' request. *)
-      additional_module_columns : Column_descriptor.t option [@key "additionalModuleColumns"] [@default None]; (** The set of additional module information exposed by the debug adapter. *)
-      supported_checksum_algorithms : Checksum_algorithm.t option [@key "supportedChecksumAlgorithms"] [@default None]; (** Checksum algorithms supported by the debug adapter. *)
-      supports_restart_request : bool option [@key "supportsRestartRequest"] [@default None]; (** The debug adapter supports the 'restart' request. In this case a client should not implement 'restart' by terminating and relaunching the adapter but by calling the RestartRequest. *)
-      supports_exception_options : bool option [@key "supportsExceptionOptions"] [@default None]; (** The debug adapter supports 'exceptionOptions' on the setExceptionBreakpoints request. *)
-      supports_value_formatting_options : bool option [@key "supportsValueFormattingOptions"] [@default None]; (** The debug adapter supports a 'format' attribute on the stackTraceRequest, variablesRequest, and evaluateRequest. *)
-      supports_exception_info_request : bool option [@key "supportsExceptionInfoRequest"] [@default None]; (** The debug adapter supports the 'exceptionInfo' request. *)
-      support_terminate_debuggee : bool option [@key "supportTerminateDebuggee"] [@default None]; (** The debug adapter supports the 'terminateDebuggee' attribute on the 'disconnect' request. *)
-      supports_delayed_stack_trace_loading : bool option [@key "supportsDelayedStackTraceLoading"] [@default None]; (** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and the 'totalFrames' result of the 'StackTrace' request are supported. *)
-      supports_loaded_sources_request : bool option [@key "supportsLoadedSourcesRequest"] [@default None]; (** The debug adapter supports the 'loadedSources' request. *)
-      supports_log_points : bool option [@key "supportsLogPoints"] [@default None]; (** The debug adapter supports logpoints by interpreting the 'logMessage' attribute of the SourceBreakpoint. *)
-      supports_terminate_threads_request : bool option [@key "supportsTerminateThreadsRequest"] [@default None]; (** The debug adapter supports the 'terminateThreads' request. *)
-      supports_set_expression : bool option [@key "supportsSetExpression"] [@default None]; (** The debug adapter supports the 'setExpression' request. *)
-      supports_terminate_request : bool option [@key "supportsTerminateRequest"] [@default None]; (** The debug adapter supports the 'terminate' request. *)
-      supports_data_breakpoints : bool option [@key "supportsDataBreakpoints"] [@default None]; (** The debug adapter supports data breakpoints. *)
-      supports_read_memory_request : bool option [@key "supportsReadMemoryRequest"] [@default None]; (** The debug adapter supports the 'readMemory' request. *)
-      supports_disassemble_request : bool option [@key "supportsDisassembleRequest"] [@default None]; (** The debug adapter supports the 'disassemble' request. *)
-      supports_cancel_request : bool option [@key "supportsCancelRequest"] [@default None]; (** The debug adapter supports the 'cancel' request. *)
-      supports_breakpoint_locations_request : bool option [@key "supportsBreakpointLocationsRequest"] [@default None]; (** The debug adapter supports the 'breakpointLocations' request. *)
-      supports_clipboard_context : bool option [@key "supportsClipboardContext"] [@default None]; (** The debug adapter supports the 'clipboard' context value in the 'evaluate' request. *)
-      supports_stepping_granularity : bool option [@key "supportsSteppingGranularity"] [@default None]; (** The debug adapter supports stepping granularities (argument 'granularity') for the stepping requests. *)
-      supports_instruction_breakpoints : bool option [@key "supportsInstructionBreakpoints"] [@default None]; (** The debug adapter supports adding breakpoints based on instruction references. *)
-      supports_exception_filter_options : bool option [@key "supportsExceptionFilterOptions"] [@default None]; (** The debug adapter supports 'filterOptions' as an argument on the 'setExceptionBreakpoints' request. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      module Path_format = struct
+        (** Determines in what format paths are specified. The default is 'path', which is the native format. *)
+        type t =
+          | Path [@name "path"]
+          | Uri [@name "uri"]
+          | Custom of string
+
+        let of_yojson = function
+          | `String "path" -> Ok Path
+          | `String "uri" -> Ok Uri
+          | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
+
+        let to_yojson = function
+          | Path -> `String "path" 
+          | Uri -> `String "uri" 
+          | Custom str -> `String str
+      end
+
+      (** Arguments for 'initialize' request. *)
+      type t = {
+        client_id : string option [@key "clientID"] [@default None]; (** The ID of the (frontend) client using this adapter. *)
+        client_name : string option [@key "clientName"] [@default None]; (** The human readable name of the (frontend) client using this adapter. *)
+        adapter_id : string [@key "adapterID"]; (** The ID of the debug adapter. *)
+        locale : string option [@default None]; (** The ISO-639 locale of the (frontend) client using this adapter, e.g. en-US or de-CH. *)
+        lines_start_at1 : bool option [@key "linesStartAt1"] [@default None]; (** If true all line numbers are 1-based (default). *)
+        columns_start_at1 : bool option [@key "columnsStartAt1"] [@default None]; (** If true all column numbers are 1-based (default). *)
+        path_format : Path_format.t option [@key "pathFormat"] [@default None]; (** Determines in what format paths are specified. The default is 'path', which is the native format. *)
+        supports_variable_type : bool option [@key "supportsVariableType"] [@default None]; (** Client supports the optional type attribute for variables. *)
+        supports_variable_paging : bool option [@key "supportsVariablePaging"] [@default None]; (** Client supports the paging of variables. *)
+        supports_run_in_terminal_request : bool option [@key "supportsRunInTerminalRequest"] [@default None]; (** Client supports the runInTerminal request. *)
+        supports_memory_references : bool option [@key "supportsMemoryReferences"] [@default None]; (** Client supports memory references. *)
+        supports_progress_reporting : bool option [@key "supportsProgressReporting"] [@default None]; (** Client supports progress reporting. *)
+        supports_invalidated_event : bool option [@key "supportsInvalidatedEvent"] [@default None]; (** Client supports the invalidated event. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** This optional request indicates that the client has finished initialization of the debug adapter.
 So it is the last request in the sequence of configuration requests (which was started by the 'initialized' event).
 Clients should only call this request if the capability 'supportsConfigurationDoneRequest' is true. *)
-module Configuration_done_request = struct
-  let command = "configurationDone"
+module Configuration_done_command = struct
+  let type_ = "configurationDone"
 
-  module Arguments = struct
-    (** Arguments for 'configurationDone' request. *)
-    type t = Empty_dict.t
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'configurationDone' request. *)
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Arguments.t Request.t
     [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'configurationDone' request. *)
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** This launch request is sent from the client to the debug adapter to start the debuggee with or without debugging (if 'noDebug' is true).
 Since launching is debugger/runtime specific, the arguments for this request are not part of this specification. *)
-module Launch_request = struct
-  let command = "launch"
+module Launch_command = struct
+  let type_ = "launch"
 
-  module Arguments = struct
-    (** Arguments for 'launch' request. Additional attributes are implementation specific. *)
-    type t = {
-      no_debug : bool option [@key "noDebug"] [@default None]; (** If noDebug is true the launch request should launch the program without enabling debugging. *)
-      __restart : Any.t option [@default None]; (** Optional data from the previous, restarted session.
-      The data is sent as the 'restart' attribute of the 'terminated' event.
-      The client should leave the data intact. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'launch' request. Additional attributes are implementation specific. *)
+      type t = {
+        no_debug : bool option [@key "noDebug"] [@default None]; (** If noDebug is true the launch request should launch the program without enabling debugging. *)
+        __restart : Any.t option [@default None]; (** Optional data from the previous, restarted session.
+        The data is sent as the 'restart' attribute of the 'terminated' event.
+        The client should leave the data intact. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'launch' request. Additional attributes are implementation specific. *)
+      type t = {
+        no_debug : bool option [@key "noDebug"] [@default None]; (** If noDebug is true the launch request should launch the program without enabling debugging. *)
+        __restart : Any.t option [@default None]; (** Optional data from the previous, restarted session.
+        The data is sent as the 'restart' attribute of the 'terminated' event.
+        The client should leave the data intact. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The attach request is sent from the client to the debug adapter to attach to a debuggee that is already running.
 Since attaching is debugger/runtime specific, the arguments for this request are not part of this specification. *)
-module Attach_request = struct
-  let command = "attach"
+module Attach_command = struct
+  let type_ = "attach"
 
-  module Arguments = struct
-    (** Arguments for 'attach' request. Additional attributes are implementation specific. *)
-    type t = {
-      __restart : Any.t option [@default None]; (** Optional data from the previous, restarted session.
-      The data is sent as the 'restart' attribute of the 'terminated' event.
-      The client should leave the data intact. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'attach' request. Additional attributes are implementation specific. *)
+      type t = {
+        __restart : Any.t option [@default None]; (** Optional data from the previous, restarted session.
+        The data is sent as the 'restart' attribute of the 'terminated' event.
+        The client should leave the data intact. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'attach' request. Additional attributes are implementation specific. *)
+      type t = {
+        __restart : Any.t option [@default None]; (** Optional data from the previous, restarted session.
+        The data is sent as the 'restart' attribute of the 'terminated' event.
+        The client should leave the data intact. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** Restarts a debug session. Clients should only call this request if the capability 'supportsRestartRequest' is true.
 If the capability is missing or has the value false, a typical client will emulate 'restart' by terminating the debug adapter first and then launching it anew. *)
-module Restart_request = struct
-  let command = "restart"
+module Restart_command = struct
+  let type_ = "restart"
 
-  module Arguments = struct
-    (** Arguments for 'restart' request. *)
-    type t = Empty_dict.t
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'restart' request. *)
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Arguments.t Request.t
     [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'restart' request. *)
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
@@ -1623,93 +1791,150 @@ It asks the debug adapter to disconnect from the debuggee and to terminate the d
 If the debuggee has been started with the 'launch' request, the 'disconnect' request terminates the debuggee.
 If the 'attach' request was used to connect to the debuggee, 'disconnect' does not terminate the debuggee.
 This behavior can be controlled with the 'terminateDebuggee' argument (if supported by the debug adapter). *)
-module Disconnect_request = struct
-  let command = "disconnect"
+module Disconnect_command = struct
+  let type_ = "disconnect"
 
-  module Arguments = struct
-    (** Arguments for 'disconnect' request. *)
-    type t = {
-      restart : bool option [@default None]; (** A value of true indicates that this 'disconnect' request is part of a restart sequence. *)
-      terminate_debuggee : bool option [@key "terminateDebuggee"] [@default None]; (** Indicates whether the debuggee should be terminated when the debugger is disconnected.
-      If unspecified, the debug adapter is free to do whatever it thinks is best.
-      The attribute is only honored by a debug adapter if the capability 'supportTerminateDebuggee' is true. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'disconnect' request. *)
+      type t = {
+        restart : bool option [@default None]; (** A value of true indicates that this 'disconnect' request is part of a restart sequence. *)
+        terminate_debuggee : bool option [@key "terminateDebuggee"] [@default None]; (** Indicates whether the debuggee should be terminated when the debugger is disconnected.
+        If unspecified, the debug adapter is free to do whatever it thinks is best.
+        The attribute is only honored by a debug adapter if the capability 'supportTerminateDebuggee' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'disconnect' request. *)
+      type t = {
+        restart : bool option [@default None]; (** A value of true indicates that this 'disconnect' request is part of a restart sequence. *)
+        terminate_debuggee : bool option [@key "terminateDebuggee"] [@default None]; (** Indicates whether the debuggee should be terminated when the debugger is disconnected.
+        If unspecified, the debug adapter is free to do whatever it thinks is best.
+        The attribute is only honored by a debug adapter if the capability 'supportTerminateDebuggee' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The 'terminate' request is sent from the client to the debug adapter in order to give the debuggee a chance for terminating itself.
 Clients should only call this request if the capability 'supportsTerminateRequest' is true. *)
-module Terminate_request = struct
-  let command = "terminate"
+module Terminate_command = struct
+  let type_ = "terminate"
 
-  module Arguments = struct
-    (** Arguments for 'terminate' request. *)
-    type t = {
-      restart : bool option [@default None]; (** A value of true indicates that this 'terminate' request is part of a restart sequence. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'terminate' request. *)
+      type t = {
+        restart : bool option [@default None]; (** A value of true indicates that this 'terminate' request is part of a restart sequence. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'terminate' request. *)
+      type t = {
+        restart : bool option [@default None]; (** A value of true indicates that this 'terminate' request is part of a restart sequence. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The 'breakpointLocations' request returns all possible locations for source breakpoints in a given range.
 Clients should only call this request if the capability 'supportsBreakpointLocationsRequest' is true. *)
-module Breakpoint_locations_request = struct
-  let command = "breakpointLocations"
+module Breakpoint_locations_command = struct
+  let type_ = "breakpointLocations"
 
-  module Arguments = struct
-    (** Arguments for 'breakpointLocations' request. *)
-    type t = {
-      source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
-      line : int; (** Start line of range to search possible breakpoint locations in. If only the line is specified, the request returns all possible locations in that line. *)
-      column : int option [@default None]; (** Optional start column of range to search possible breakpoint locations in. If no start column is given, the first column in the start line is assumed. *)
-      end_line : int option [@key "endLine"] [@default None]; (** Optional end line of range to search possible breakpoint locations in. If no end line is given, then the end line is assumed to be the start line. *)
-      end_column : int option [@key "endColumn"] [@default None]; (** Optional end column of range to search possible breakpoint locations in. If no end column is given, then it is assumed to be in the last column of the end line. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'breakpointLocations' request. *)
+      type t = {
+        source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
+        line : int; (** Start line of range to search possible breakpoint locations in. If only the line is specified, the request returns all possible locations in that line. *)
+        column : int option [@default None]; (** Optional start column of range to search possible breakpoint locations in. If no start column is given, the first column in the start line is assumed. *)
+        end_line : int option [@key "endLine"] [@default None]; (** Optional end line of range to search possible breakpoint locations in. If no end line is given, then the end line is assumed to be the start line. *)
+        end_column : int option [@key "endColumn"] [@default None]; (** Optional end column of range to search possible breakpoint locations in. If no end column is given, then it is assumed to be in the last column of the end line. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      breakpoints : Breakpoint_location.t; (** Sorted set of possible breakpoint locations. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'breakpointLocations' request. *)
+      type t = {
+        source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
+        line : int; (** Start line of range to search possible breakpoint locations in. If only the line is specified, the request returns all possible locations in that line. *)
+        column : int option [@default None]; (** Optional start column of range to search possible breakpoint locations in. If no start column is given, the first column in the start line is assumed. *)
+        end_line : int option [@key "endLine"] [@default None]; (** Optional end line of range to search possible breakpoint locations in. If no end line is given, then the end line is assumed to be the start line. *)
+        end_column : int option [@key "endColumn"] [@default None]; (** Optional end column of range to search possible breakpoint locations in. If no end column is given, then it is assumed to be in the last column of the end line. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Sets multiple breakpoints for a single source and clears all previous breakpoints in that source.
 To clear all breakpoint for a source, specify an empty array.
 When a breakpoint is hit, a 'stopped' event (with reason 'breakpoint') is generated. *)
-module Set_breakpoints_request = struct
-  let command = "setBreakpoints"
+module Set_breakpoints_command = struct
+  let type_ = "setBreakpoints"
 
-  module Arguments = struct
-    (** Arguments for 'setBreakpoints' request. *)
-    type t = {
-      source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
-      breakpoints : Source_breakpoint.t option [@default None]; (** The code locations of the breakpoints. *)
-      lines : int option [@default None]; (** Deprecated: The code locations of the breakpoints. *)
-      source_modified : bool option [@key "sourceModified"] [@default None]; (** A value of true indicates that the underlying source has been modified which results in new breakpoint locations. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setBreakpoints' request. *)
+      type t = {
+        source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
+        breakpoints : Source_breakpoint.t option [@default None]; (** The code locations of the breakpoints. *)
+        lines : int option [@default None]; (** Deprecated: The code locations of the breakpoints. *)
+        source_modified : bool option [@key "sourceModified"] [@default None]; (** A value of true indicates that the underlying source has been modified which results in new breakpoint locations. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      breakpoints : Breakpoint.t; (** Information about the breakpoints.
-      The array elements are in the same order as the elements of the 'breakpoints' (or the deprecated 'lines') array in the arguments. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setBreakpoints' request. *)
+      type t = {
+        source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
+        breakpoints : Source_breakpoint.t option [@default None]; (** The code locations of the breakpoints. *)
+        lines : int option [@default None]; (** Deprecated: The code locations of the breakpoints. *)
+        source_modified : bool option [@key "sourceModified"] [@default None]; (** A value of true indicates that the underlying source has been modified which results in new breakpoint locations. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
@@ -1717,71 +1942,108 @@ end
 To clear all function breakpoints, specify an empty array.
 When a function breakpoint is hit, a 'stopped' event (with reason 'function breakpoint') is generated.
 Clients should only call this request if the capability 'supportsFunctionBreakpoints' is true. *)
-module Set_function_breakpoints_request = struct
-  let command = "setFunctionBreakpoints"
+module Set_function_breakpoints_command = struct
+  let type_ = "setFunctionBreakpoints"
 
-  module Arguments = struct
-    (** Arguments for 'setFunctionBreakpoints' request. *)
-    type t = {
-      breakpoints : Function_breakpoint.t; (** The function names of the breakpoints. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setFunctionBreakpoints' request. *)
+      type t = {
+        breakpoints : Function_breakpoint.t; (** The function names of the breakpoints. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      breakpoints : Breakpoint.t; (** Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setFunctionBreakpoints' request. *)
+      type t = {
+        breakpoints : Function_breakpoint.t; (** The function names of the breakpoints. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request configures the debuggers response to thrown exceptions.
 If an exception is configured to break, a 'stopped' event is fired (with reason 'exception').
 Clients should only call this request if the capability 'exceptionBreakpointFilters' returns one or more filters. *)
-module Set_exception_breakpoints_request = struct
-  let command = "setExceptionBreakpoints"
+module Set_exception_breakpoints_command = struct
+  let type_ = "setExceptionBreakpoints"
 
-  module Arguments = struct
-    (** Arguments for 'setExceptionBreakpoints' request. *)
-    type t = {
-      filters : string; (** Set of exception filters specified by their ID. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. The 'filter' and 'filterOptions' sets are additive. *)
-      filter_options : Exception_filter_options.t option [@key "filterOptions"] [@default None]; (** Set of exception filters and their options. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. This attribute is only honored by a debug adapter if the capability 'supportsExceptionFilterOptions' is true. The 'filter' and 'filterOptions' sets are additive. *)
-      exception_options : Exception_options.t option [@key "exceptionOptions"] [@default None]; (** Configuration options for selected exceptions.
-      The attribute is only honored by a debug adapter if the capability 'supportsExceptionOptions' is true. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setExceptionBreakpoints' request. *)
+      type t = {
+        filters : string; (** Set of exception filters specified by their ID. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. The 'filter' and 'filterOptions' sets are additive. *)
+        filter_options : Exception_filter_options.t option [@key "filterOptions"] [@default None]; (** Set of exception filters and their options. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. This attribute is only honored by a debug adapter if the capability 'supportsExceptionFilterOptions' is true. The 'filter' and 'filterOptions' sets are additive. *)
+        exception_options : Exception_options.t option [@key "exceptionOptions"] [@default None]; (** Configuration options for selected exceptions.
+        The attribute is only honored by a debug adapter if the capability 'supportsExceptionOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setExceptionBreakpoints' request. *)
+      type t = {
+        filters : string; (** Set of exception filters specified by their ID. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. The 'filter' and 'filterOptions' sets are additive. *)
+        filter_options : Exception_filter_options.t option [@key "filterOptions"] [@default None]; (** Set of exception filters and their options. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. This attribute is only honored by a debug adapter if the capability 'supportsExceptionFilterOptions' is true. The 'filter' and 'filterOptions' sets are additive. *)
+        exception_options : Exception_options.t option [@key "exceptionOptions"] [@default None]; (** Configuration options for selected exceptions.
+        The attribute is only honored by a debug adapter if the capability 'supportsExceptionOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** Obtains information on a possible data breakpoint that could be set on an expression or variable.
 Clients should only call this request if the capability 'supportsDataBreakpoints' is true. *)
-module Data_breakpoint_info_request = struct
-  let command = "dataBreakpointInfo"
+module Data_breakpoint_info_command = struct
+  let type_ = "dataBreakpointInfo"
 
-  module Arguments = struct
-    (** Arguments for 'dataBreakpointInfo' request. *)
-    type t = {
-      variables_reference : int option [@key "variablesReference"] [@default None]; (** Reference to the Variable container if the data breakpoint is requested for a child of the container. *)
-      name : string; (** The name of the Variable's child to obtain data breakpoint information for.
-      If variableReference isn’t provided, this can be an expression. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'dataBreakpointInfo' request. *)
+      type t = {
+        variables_reference : int option [@key "variablesReference"] [@default None]; (** Reference to the Variable container if the data breakpoint is requested for a child of the container. *)
+        name : string; (** The name of the Variable's child to obtain data breakpoint information for.
+        If variableReference isn’t provided, this can be an expression. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      data_id : string option [@key "dataId"]; (** An identifier for the data on which a data breakpoint can be registered with the setDataBreakpoints request or null if no data breakpoint is available. *)
-      description : string; (** UI string that describes on what data the breakpoint is set on or why a data breakpoint is not available. *)
-      access_types : Data_breakpoint_access_type.t option [@key "accessTypes"] [@default None]; (** Optional attribute listing the available access types for a potential data breakpoint. A UI frontend could surface this information. *)
-      can_persist : bool option [@key "canPersist"] [@default None]; (** Optional attribute indicating that a potential data breakpoint could be persisted across sessions. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'dataBreakpointInfo' request. *)
+      type t = {
+        variables_reference : int option [@key "variablesReference"] [@default None]; (** Reference to the Variable container if the data breakpoint is requested for a child of the container. *)
+        name : string; (** The name of the Variable's child to obtain data breakpoint information for.
+        If variableReference isn’t provided, this can be an expression. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
@@ -1789,22 +2051,33 @@ end
 To clear all data breakpoints, specify an empty array.
 When a data breakpoint is hit, a 'stopped' event (with reason 'data breakpoint') is generated.
 Clients should only call this request if the capability 'supportsDataBreakpoints' is true. *)
-module Set_data_breakpoints_request = struct
-  let command = "setDataBreakpoints"
+module Set_data_breakpoints_command = struct
+  let type_ = "setDataBreakpoints"
 
-  module Arguments = struct
-    (** Arguments for 'setDataBreakpoints' request. *)
-    type t = {
-      breakpoints : Data_breakpoint.t; (** The contents of this array replaces all existing data breakpoints. An empty array clears all data breakpoints. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setDataBreakpoints' request. *)
+      type t = {
+        breakpoints : Data_breakpoint.t; (** The contents of this array replaces all existing data breakpoints. An empty array clears all data breakpoints. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      breakpoints : Breakpoint.t; (** Information about the data breakpoints. The array elements correspond to the elements of the input argument 'breakpoints' array. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setDataBreakpoints' request. *)
+      type t = {
+        breakpoints : Data_breakpoint.t; (** The contents of this array replaces all existing data breakpoints. An empty array clears all data breakpoints. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
@@ -1812,63 +2085,99 @@ end
 To clear all instruction breakpoints, specify an empty array.
 When an instruction breakpoint is hit, a 'stopped' event (with reason 'instruction breakpoint') is generated.
 Clients should only call this request if the capability 'supportsInstructionBreakpoints' is true. *)
-module Set_instruction_breakpoints_request = struct
-  let command = "setInstructionBreakpoints"
+module Set_instruction_breakpoints_command = struct
+  let type_ = "setInstructionBreakpoints"
 
-  module Arguments = struct
-    (** Arguments for 'setInstructionBreakpoints' request *)
-    type t = {
-      breakpoints : Instruction_breakpoint.t; (** The instruction references of the breakpoints *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setInstructionBreakpoints' request *)
+      type t = {
+        breakpoints : Instruction_breakpoint.t; (** The instruction references of the breakpoints *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      breakpoints : Breakpoint.t; (** Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setInstructionBreakpoints' request *)
+      type t = {
+        breakpoints : Instruction_breakpoint.t; (** The instruction references of the breakpoints *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request starts the debuggee to run again. *)
-module Continue_request = struct
-  let command = "continue"
+module Continue_command = struct
+  let type_ = "continue"
 
-  module Arguments = struct
-    (** Arguments for 'continue' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Continue execution for the specified thread (if possible).
-      If the backend cannot continue on a single thread but will continue on all threads, it should set the 'allThreadsContinued' attribute in the response to true. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'continue' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Continue execution for the specified thread (if possible).
+        If the backend cannot continue on a single thread but will continue on all threads, it should set the 'allThreadsContinued' attribute in the response to true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      all_threads_continued : bool option [@key "allThreadsContinued"] [@default None]; (** If true, the 'continue' request has ignored the specified thread and continued all threads instead.
-      If this attribute is missing a value of 'true' is assumed for backward compatibility. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'continue' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Continue execution for the specified thread (if possible).
+        If the backend cannot continue on a single thread but will continue on all threads, it should set the 'allThreadsContinued' attribute in the response to true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request starts the debuggee to run again for one step.
 The debug adapter first sends the response and then a 'stopped' event (with reason 'step') after the step has completed. *)
-module Next_request = struct
-  let command = "next"
+module Next_command = struct
+  let type_ = "next"
 
-  module Arguments = struct
-    (** Arguments for 'next' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Execute 'next' for this thread. *)
-      granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'next' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'next' for this thread. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'next' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'next' for this thread. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
@@ -1879,41 +2188,70 @@ The debug adapter first sends the response and then a 'stopped' event (with reas
 If there are multiple function/method calls (or other targets) on the source line,
 the optional argument 'targetId' can be used to control into which target the 'stepIn' should occur.
 The list of possible targets for a given source line can be retrieved via the 'stepInTargets' request. *)
-module Step_in_request = struct
-  let command = "stepIn"
+module Step_in_command = struct
+  let type_ = "stepIn"
 
-  module Arguments = struct
-    (** Arguments for 'stepIn' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Execute 'stepIn' for this thread. *)
-      target_id : int option [@key "targetId"] [@default None]; (** Optional id of the target to step into. *)
-      granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'stepIn' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'stepIn' for this thread. *)
+        target_id : int option [@key "targetId"] [@default None]; (** Optional id of the target to step into. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'stepIn' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'stepIn' for this thread. *)
+        target_id : int option [@key "targetId"] [@default None]; (** Optional id of the target to step into. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The request starts the debuggee to run again for one step.
 The debug adapter first sends the response and then a 'stopped' event (with reason 'step') after the step has completed. *)
-module Step_out_request = struct
-  let command = "stepOut"
+module Step_out_command = struct
+  let type_ = "stepOut"
 
-  module Arguments = struct
-    (** Arguments for 'stepOut' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Execute 'stepOut' for this thread. *)
-      granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'stepOut' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'stepOut' for this thread. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'stepOut' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'stepOut' for this thread. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
@@ -1921,39 +2259,66 @@ end
 (** The request starts the debuggee to run one step backwards.
 The debug adapter first sends the response and then a 'stopped' event (with reason 'step') after the step has completed.
 Clients should only call this request if the capability 'supportsStepBack' is true. *)
-module Step_back_request = struct
-  let command = "stepBack"
+module Step_back_command = struct
+  let type_ = "stepBack"
 
-  module Arguments = struct
-    (** Arguments for 'stepBack' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Execute 'stepBack' for this thread. *)
-      granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'stepBack' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'stepBack' for this thread. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'stepBack' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'stepBack' for this thread. *)
+        granularity : Stepping_granularity.t option [@default None]; (** Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The request starts the debuggee to run backward.
 Clients should only call this request if the capability 'supportsStepBack' is true. *)
-module Reverse_continue_request = struct
-  let command = "reverseContinue"
+module Reverse_continue_command = struct
+  let type_ = "reverseContinue"
 
-  module Arguments = struct
-    (** Arguments for 'reverseContinue' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Execute 'reverseContinue' for this thread. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'reverseContinue' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'reverseContinue' for this thread. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'reverseContinue' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Execute 'reverseContinue' for this thread. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
@@ -1961,19 +2326,32 @@ end
 (** The request restarts execution of the specified stackframe.
 The debug adapter first sends the response and then a 'stopped' event (with reason 'restart') after the restart has completed.
 Clients should only call this request if the capability 'supportsRestartFrame' is true. *)
-module Restart_frame_request = struct
-  let command = "restartFrame"
+module Restart_frame_command = struct
+  let type_ = "restartFrame"
 
-  module Arguments = struct
-    (** Arguments for 'restartFrame' request. *)
-    type t = {
-      frame_id : int [@key "frameId"]; (** Restart this stackframe. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'restartFrame' request. *)
+      type t = {
+        frame_id : int [@key "frameId"]; (** Restart this stackframe. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'restartFrame' request. *)
+      type t = {
+        frame_id : int [@key "frameId"]; (** Restart this stackframe. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
@@ -1983,362 +2361,532 @@ This makes it possible to skip the execution of code or to executed code again.
 The code between the current location and the goto target is not executed but skipped.
 The debug adapter first sends the response and then a 'stopped' event with reason 'goto'.
 Clients should only call this request if the capability 'supportsGotoTargetsRequest' is true (because only then goto targets exist that can be passed as arguments). *)
-module Goto_request = struct
-  let command = "goto"
+module Goto_command = struct
+  let type_ = "goto"
 
-  module Arguments = struct
-    (** Arguments for 'goto' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Set the goto target for this thread. *)
-      target_id : int [@key "targetId"]; (** The location where the debuggee will continue to run. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'goto' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Set the goto target for this thread. *)
+        target_id : int [@key "targetId"]; (** The location where the debuggee will continue to run. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'goto' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Set the goto target for this thread. *)
+        target_id : int [@key "targetId"]; (** The location where the debuggee will continue to run. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The request suspends the debuggee.
 The debug adapter first sends the response and then a 'stopped' event (with reason 'pause') after the thread has been paused successfully. *)
-module Pause_request = struct
-  let command = "pause"
+module Pause_command = struct
+  let type_ = "pause"
 
-  module Arguments = struct
-    (** Arguments for 'pause' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Pause execution for this thread. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'pause' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Pause execution for this thread. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'pause' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Pause execution for this thread. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** The request returns a stacktrace from the current execution state of a given thread.
 A client can request all stack frames by omitting the startFrame and levels arguments. For performance conscious clients stack frames can be retrieved in a piecemeal way with the startFrame and levels arguments. The response of the stackTrace request may contain a totalFrames property that hints at the total number of frames in the stack. If a client needs this total number upfront, it can issue a request for a single (first) frame and depending on the value of totalFrames decide how to proceed. In any case a client should be prepared to receive less frames than requested, which is an indication that the end of the stack has been reached. *)
-module Stack_trace_request = struct
-  let command = "stackTrace"
+module Stack_trace_command = struct
+  let type_ = "stackTrace"
 
-  module Arguments = struct
-    (** Arguments for 'stackTrace' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Retrieve the stacktrace for this thread. *)
-      start_frame : int option [@key "startFrame"] [@default None]; (** The index of the first frame to return; if omitted frames start at 0. *)
-      levels : int option [@default None]; (** The maximum number of frames to return. If levels is not specified or 0, all frames are returned. *)
-      format : Stack_frame_format.t option [@default None]; (** Specifies details on how to format the stack frames.
-      The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'stackTrace' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Retrieve the stacktrace for this thread. *)
+        start_frame : int option [@key "startFrame"] [@default None]; (** The index of the first frame to return; if omitted frames start at 0. *)
+        levels : int option [@default None]; (** The maximum number of frames to return. If levels is not specified or 0, all frames are returned. *)
+        format : Stack_frame_format.t option [@default None]; (** Specifies details on how to format the stack frames.
+        The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      stack_frames : Stack_frame.t [@key "stackFrames"]; (** The frames of the stackframe. If the array has length zero, there are no stackframes available.
-      This means that there is no location information available. *)
-      total_frames : int option [@key "totalFrames"] [@default None]; (** The total number of frames available in the stack. If omitted or if totalFrames is larger than the available frames, a client is expected to request frames until a request returns less frames than requested (which indicates the end of the stack). Returning monotonically increasing totalFrames values for subsequent requests can be used to enforce paging in the client. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'stackTrace' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Retrieve the stacktrace for this thread. *)
+        start_frame : int option [@key "startFrame"] [@default None]; (** The index of the first frame to return; if omitted frames start at 0. *)
+        levels : int option [@default None]; (** The maximum number of frames to return. If levels is not specified or 0, all frames are returned. *)
+        format : Stack_frame_format.t option [@default None]; (** Specifies details on how to format the stack frames.
+        The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request returns the variable scopes for a given stackframe ID. *)
-module Scopes_request = struct
-  let command = "scopes"
+module Scopes_command = struct
+  let type_ = "scopes"
 
-  module Arguments = struct
-    (** Arguments for 'scopes' request. *)
-    type t = {
-      frame_id : int [@key "frameId"]; (** Retrieve the scopes for this stackframe. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'scopes' request. *)
+      type t = {
+        frame_id : int [@key "frameId"]; (** Retrieve the scopes for this stackframe. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      scopes : Scope.t; (** The scopes of the stackframe. If the array has length zero, there are no scopes available. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'scopes' request. *)
+      type t = {
+        frame_id : int [@key "frameId"]; (** Retrieve the scopes for this stackframe. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Retrieves all child variables for the given variable reference.
 An optional filter can be used to limit the fetched children to either named or indexed children. *)
-module Variables_request = struct
-  let command = "variables"
+module Variables_command = struct
+  let type_ = "variables"
 
-  module Arguments = struct
-    module Filter = struct
-      (** Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
-      type t =
-        | Indexed [@name "indexed"]
-        | Named [@name "named"]
+  module Request = struct
+    module Arguments = struct
+      module Filter = struct
+        (** Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
+        type t =
+          | Indexed [@name "indexed"]
+          | Named [@name "named"]
 
-      let of_yojson = function
-        | `String "indexed" -> Ok Indexed
-        | `String "named" -> Ok Named
-        | _ -> Error (print_exn_at_loc [%here])
+        let of_yojson = function
+          | `String "indexed" -> Ok Indexed
+          | `String "named" -> Ok Named
+          | _ -> Error (print_exn_at_loc [%here])
 
-      let to_yojson = function
-        | Indexed -> `String "indexed" 
-        | Named -> `String "named" 
+        let to_yojson = function
+          | Indexed -> `String "indexed" 
+          | Named -> `String "named" 
 
+      end
+
+      (** Arguments for 'variables' request. *)
+      type t = {
+        variables_reference : int [@key "variablesReference"]; (** The Variable reference. *)
+        filter : Filter.t option [@default None]; (** Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
+        start : int option [@default None]; (** The index of the first variable to return; if omitted children start at 0. *)
+        count : int option [@default None]; (** The number of variables to return. If count is missing or 0, all variables are returned. *)
+        format : Value_format.t option [@default None]; (** Specifies details on how to format the Variable values.
+        The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
     end
 
-    (** Arguments for 'variables' request. *)
-    type t = {
-      variables_reference : int [@key "variablesReference"]; (** The Variable reference. *)
-      filter : Filter.t option [@default None]; (** Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
-      start : int option [@default None]; (** The index of the first variable to return; if omitted children start at 0. *)
-      count : int option [@default None]; (** The number of variables to return. If count is missing or 0, all variables are returned. *)
-      format : Value_format.t option [@default None]; (** Specifies details on how to format the Variable values.
-      The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      variables : Variable.t; (** All (or a range) of variables for the given variable reference. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      module Filter = struct
+        (** Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
+        type t =
+          | Indexed [@name "indexed"]
+          | Named [@name "named"]
+
+        let of_yojson = function
+          | `String "indexed" -> Ok Indexed
+          | `String "named" -> Ok Named
+          | _ -> Error (print_exn_at_loc [%here])
+
+        let to_yojson = function
+          | Indexed -> `String "indexed" 
+          | Named -> `String "named" 
+
+      end
+
+      (** Arguments for 'variables' request. *)
+      type t = {
+        variables_reference : int [@key "variablesReference"]; (** The Variable reference. *)
+        filter : Filter.t option [@default None]; (** Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
+        start : int option [@default None]; (** The index of the first variable to return; if omitted children start at 0. *)
+        count : int option [@default None]; (** The number of variables to return. If count is missing or 0, all variables are returned. *)
+        format : Value_format.t option [@default None]; (** Specifies details on how to format the Variable values.
+        The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Set the variable with the given name in the variable container to a new value. Clients should only call this request if the capability 'supportsSetVariable' is true. *)
-module Set_variable_request = struct
-  let command = "setVariable"
+module Set_variable_command = struct
+  let type_ = "setVariable"
 
-  module Arguments = struct
-    (** Arguments for 'setVariable' request. *)
-    type t = {
-      variables_reference : int [@key "variablesReference"]; (** The reference of the variable container. *)
-      name : string; (** The name of the variable in the container. *)
-      value : string; (** The value of the variable. *)
-      format : Value_format.t option [@default None]; (** Specifies details on how to format the response value. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setVariable' request. *)
+      type t = {
+        variables_reference : int [@key "variablesReference"]; (** The reference of the variable container. *)
+        name : string; (** The name of the variable in the container. *)
+        value : string; (** The value of the variable. *)
+        format : Value_format.t option [@default None]; (** Specifies details on how to format the response value. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      value : string; (** The new value of the variable. *)
-      type_ : string option [@key "type"] [@default None]; (** The type of the new value. Typically shown in the UI when hovering over the value. *)
-      variables_reference : int option [@key "variablesReference"] [@default None]; (** If variablesReference is > 0, the new value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      named_variables : int option [@key "namedVariables"] [@default None]; (** The number of named child variables.
-      The client can use this optional information to present the variables in a paged UI and fetch them in chunks.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      indexed_variables : int option [@key "indexedVariables"] [@default None]; (** The number of indexed child variables.
-      The client can use this optional information to present the variables in a paged UI and fetch them in chunks.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setVariable' request. *)
+      type t = {
+        variables_reference : int [@key "variablesReference"]; (** The reference of the variable container. *)
+        name : string; (** The name of the variable in the container. *)
+        value : string; (** The value of the variable. *)
+        format : Value_format.t option [@default None]; (** Specifies details on how to format the response value. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request retrieves the source code for a given source reference. *)
-module Source_request = struct
-  let command = "source"
+module Source_command = struct
+  let type_ = "source"
 
-  module Arguments = struct
-    (** Arguments for 'source' request. *)
-    type t = {
-      source : Source.t option [@default None]; (** Specifies the source content to load. Either source.path or source.sourceReference must be specified. *)
-      source_reference : int [@key "sourceReference"]; (** The reference to the source. This is the same as source.sourceReference.
-      This is provided for backward compatibility since old backends do not understand the 'source' attribute. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'source' request. *)
+      type t = {
+        source : Source.t option [@default None]; (** Specifies the source content to load. Either source.path or source.sourceReference must be specified. *)
+        source_reference : int [@key "sourceReference"]; (** The reference to the source. This is the same as source.sourceReference.
+        This is provided for backward compatibility since old backends do not understand the 'source' attribute. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      content : string; (** Content of the source reference. *)
-      mime_type : string option [@key "mimeType"] [@default None]; (** Optional content type (mime type) of the source. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'source' request. *)
+      type t = {
+        source : Source.t option [@default None]; (** Specifies the source content to load. Either source.path or source.sourceReference must be specified. *)
+        source_reference : int [@key "sourceReference"]; (** The reference to the source. This is the same as source.sourceReference.
+        This is provided for backward compatibility since old backends do not understand the 'source' attribute. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request retrieves a list of all threads. *)
-module Threads_request = struct
-  let command = "threads"
+module Threads_command = struct
+  let type_ = "threads"
 
-  module Arguments = struct
-    type t = Empty_dict.t
+  module Request = struct
+    module Arguments = struct
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Arguments.t Request.t
     [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      threads : Thread.t; (** All threads. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** The request terminates the threads with the given ids.
 Clients should only call this request if the capability 'supportsTerminateThreadsRequest' is true. *)
-module Terminate_threads_request = struct
-  let command = "terminateThreads"
+module Terminate_threads_command = struct
+  let type_ = "terminateThreads"
 
-  module Arguments = struct
-    (** Arguments for 'terminateThreads' request. *)
-    type t = {
-      thread_ids : int option [@key "threadIds"] [@default None]; (** Ids of threads to be terminated. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'terminateThreads' request. *)
+      type t = {
+        thread_ids : int option [@key "threadIds"] [@default None]; (** Ids of threads to be terminated. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = Empty_dict.t
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'terminateThreads' request. *)
+      type t = {
+        thread_ids : int option [@key "threadIds"] [@default None]; (** Ids of threads to be terminated. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
     [@@deriving yojson]
   end
 end
 
 (** Modules can be retrieved from the debug adapter with this request which can either return all modules or a range of modules to support paging.
 Clients should only call this request if the capability 'supportsModulesRequest' is true. *)
-module Modules_request = struct
-  let command = "modules"
+module Modules_command = struct
+  let type_ = "modules"
 
-  module Arguments = struct
-    (** Arguments for 'modules' request. *)
-    type t = {
-      start_module : int option [@key "startModule"] [@default None]; (** The index of the first module to return; if omitted modules start at 0. *)
-      module_count : int option [@key "moduleCount"] [@default None]; (** The number of modules to return. If moduleCount is not specified or 0, all modules are returned. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'modules' request. *)
+      type t = {
+        start_module : int option [@key "startModule"] [@default None]; (** The index of the first module to return; if omitted modules start at 0. *)
+        module_count : int option [@key "moduleCount"] [@default None]; (** The number of modules to return. If moduleCount is not specified or 0, all modules are returned. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      modules : Module.t; (** All modules or range of modules. *)
-      total_modules : int option [@key "totalModules"] [@default None]; (** The total number of modules available. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'modules' request. *)
+      type t = {
+        start_module : int option [@key "startModule"] [@default None]; (** The index of the first module to return; if omitted modules start at 0. *)
+        module_count : int option [@key "moduleCount"] [@default None]; (** The number of modules to return. If moduleCount is not specified or 0, all modules are returned. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Retrieves the set of all sources currently loaded by the debugged process.
 Clients should only call this request if the capability 'supportsLoadedSourcesRequest' is true. *)
-module Loaded_sources_request = struct
-  let command = "loadedSources"
+module Loaded_sources_command = struct
+  let type_ = "loadedSources"
 
-  module Arguments = struct
-    (** Arguments for 'loadedSources' request. *)
-    type t = Empty_dict.t
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'loadedSources' request. *)
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Arguments.t Request.t
     [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      sources : Source.t; (** Set of loaded sources. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'loadedSources' request. *)
+      type t = Empty_dict.t
+      [@@deriving yojson]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Evaluates the given expression in the context of the top most stack frame.
 The expression has access to any variables and arguments that are in scope. *)
-module Evaluate_request = struct
-  let command = "evaluate"
+module Evaluate_command = struct
+  let type_ = "evaluate"
 
-  module Arguments = struct
-    module Context = struct
-      (** The context in which the evaluate request is run. *)
-      type t =
-        | Watch [@name "watch"]
-        | Repl [@name "repl"]
-        | Hover [@name "hover"]
-        | Clipboard [@name "clipboard"]
-        | Custom of string
+  module Request = struct
+    module Arguments = struct
+      module Context = struct
+        (** The context in which the evaluate request is run. *)
+        type t =
+          | Watch [@name "watch"]
+          | Repl [@name "repl"]
+          | Hover [@name "hover"]
+          | Clipboard [@name "clipboard"]
+          | Custom of string
 
-      let of_yojson = function
-        | `String "watch" -> Ok Watch
-        | `String "repl" -> Ok Repl
-        | `String "hover" -> Ok Hover
-        | `String "clipboard" -> Ok Clipboard
-        | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
+        let of_yojson = function
+          | `String "watch" -> Ok Watch
+          | `String "repl" -> Ok Repl
+          | `String "hover" -> Ok Hover
+          | `String "clipboard" -> Ok Clipboard
+          | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
-      let to_yojson = function
-        | Watch -> `String "watch" 
-        | Repl -> `String "repl" 
-        | Hover -> `String "hover" 
-        | Clipboard -> `String "clipboard" 
-        | Custom str -> `String str
+        let to_yojson = function
+          | Watch -> `String "watch" 
+          | Repl -> `String "repl" 
+          | Hover -> `String "hover" 
+          | Clipboard -> `String "clipboard" 
+          | Custom str -> `String str
+      end
+
+      (** Arguments for 'evaluate' request. *)
+      type t = {
+        expression : string; (** The expression to evaluate. *)
+        frame_id : int option [@key "frameId"] [@default None]; (** Evaluate the expression in the scope of this stack frame. If not specified, the expression is evaluated in the global scope. *)
+        context : Context.t option [@default None]; (** The context in which the evaluate request is run. *)
+        format : Value_format.t option [@default None]; (** Specifies details on how to format the Evaluate result.
+        The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
     end
 
-    (** Arguments for 'evaluate' request. *)
-    type t = {
-      expression : string; (** The expression to evaluate. *)
-      frame_id : int option [@key "frameId"] [@default None]; (** Evaluate the expression in the scope of this stack frame. If not specified, the expression is evaluated in the global scope. *)
-      context : Context.t option [@default None]; (** The context in which the evaluate request is run. *)
-      format : Value_format.t option [@default None]; (** Specifies details on how to format the Evaluate result.
-      The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      result : string; (** The result of the evaluate request. *)
-      type_ : string option [@key "type"] [@default None]; (** The optional type of the evaluate result.
-      This attribute should only be returned by a debug adapter if the client has passed the value true for the 'supportsVariableType' capability of the 'initialize' request. *)
-      presentation_hint : Variable_presentation_hint.t option [@key "presentationHint"] [@default None]; (** Properties of a evaluate result that can be used to determine how to render the result in the UI. *)
-      variables_reference : int [@key "variablesReference"]; (** If variablesReference is > 0, the evaluate result is structured and its children can be retrieved by passing variablesReference to the VariablesRequest.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      named_variables : int option [@key "namedVariables"] [@default None]; (** The number of named child variables.
-      The client can use this optional information to present the variables in a paged UI and fetch them in chunks.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      indexed_variables : int option [@key "indexedVariables"] [@default None]; (** The number of indexed child variables.
-      The client can use this optional information to present the variables in a paged UI and fetch them in chunks.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      memory_reference : string option [@key "memoryReference"] [@default None]; (** Optional memory reference to a location appropriate for this result.
-      For pointer type eval results, this is generally a reference to the memory address contained in the pointer.
-      This attribute should be returned by a debug adapter if the client has passed the value true for the 'supportsMemoryReferences' capability of the 'initialize' request. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      module Context = struct
+        (** The context in which the evaluate request is run. *)
+        type t =
+          | Watch [@name "watch"]
+          | Repl [@name "repl"]
+          | Hover [@name "hover"]
+          | Clipboard [@name "clipboard"]
+          | Custom of string
+
+        let of_yojson = function
+          | `String "watch" -> Ok Watch
+          | `String "repl" -> Ok Repl
+          | `String "hover" -> Ok Hover
+          | `String "clipboard" -> Ok Clipboard
+          | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
+
+        let to_yojson = function
+          | Watch -> `String "watch" 
+          | Repl -> `String "repl" 
+          | Hover -> `String "hover" 
+          | Clipboard -> `String "clipboard" 
+          | Custom str -> `String str
+      end
+
+      (** Arguments for 'evaluate' request. *)
+      type t = {
+        expression : string; (** The expression to evaluate. *)
+        frame_id : int option [@key "frameId"] [@default None]; (** Evaluate the expression in the scope of this stack frame. If not specified, the expression is evaluated in the global scope. *)
+        context : Context.t option [@default None]; (** The context in which the evaluate request is run. *)
+        format : Value_format.t option [@default None]; (** Specifies details on how to format the Evaluate result.
+        The attribute is only honored by a debug adapter if the capability 'supportsValueFormattingOptions' is true. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Evaluates the given 'value' expression and assigns it to the 'expression' which must be a modifiable l-value.
 The expressions have access to any variables and arguments that are in scope of the specified frame.
 Clients should only call this request if the capability 'supportsSetExpression' is true. *)
-module Set_expression_request = struct
-  let command = "setExpression"
+module Set_expression_command = struct
+  let type_ = "setExpression"
 
-  module Arguments = struct
-    (** Arguments for 'setExpression' request. *)
-    type t = {
-      expression : string; (** The l-value expression to assign to. *)
-      value : string; (** The value expression to assign to the l-value expression. *)
-      frame_id : int option [@key "frameId"] [@default None]; (** Evaluate the expressions in the scope of this stack frame. If not specified, the expressions are evaluated in the global scope. *)
-      format : Value_format.t option [@default None]; (** Specifies how the resulting value should be formatted. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'setExpression' request. *)
+      type t = {
+        expression : string; (** The l-value expression to assign to. *)
+        value : string; (** The value expression to assign to the l-value expression. *)
+        frame_id : int option [@key "frameId"] [@default None]; (** Evaluate the expressions in the scope of this stack frame. If not specified, the expressions are evaluated in the global scope. *)
+        format : Value_format.t option [@default None]; (** Specifies how the resulting value should be formatted. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      value : string; (** The new value of the expression. *)
-      type_ : string option [@key "type"] [@default None]; (** The optional type of the value.
-      This attribute should only be returned by a debug adapter if the client has passed the value true for the 'supportsVariableType' capability of the 'initialize' request. *)
-      presentation_hint : Variable_presentation_hint.t option [@key "presentationHint"] [@default None]; (** Properties of a value that can be used to determine how to render the result in the UI. *)
-      variables_reference : int option [@key "variablesReference"] [@default None]; (** If variablesReference is > 0, the value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      named_variables : int option [@key "namedVariables"] [@default None]; (** The number of named child variables.
-      The client can use this optional information to present the variables in a paged UI and fetch them in chunks.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-      indexed_variables : int option [@key "indexedVariables"] [@default None]; (** The number of indexed child variables.
-      The client can use this optional information to present the variables in a paged UI and fetch them in chunks.
-      The value should be less than or equal to 2147483647 (2^31-1). *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'setExpression' request. *)
+      type t = {
+        expression : string; (** The l-value expression to assign to. *)
+        value : string; (** The value expression to assign to the l-value expression. *)
+        frame_id : int option [@key "frameId"] [@default None]; (** Evaluate the expressions in the scope of this stack frame. If not specified, the expressions are evaluated in the global scope. *)
+        format : Value_format.t option [@default None]; (** Specifies how the resulting value should be formatted. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
@@ -2346,147 +2894,218 @@ end
 These targets can be used in the 'stepIn' request.
 The StepInTargets may only be called if the 'supportsStepInTargetsRequest' capability exists and is true.
 Clients should only call this request if the capability 'supportsStepInTargetsRequest' is true. *)
-module Step_in_targets_request = struct
-  let command = "stepInTargets"
+module Step_in_targets_command = struct
+  let type_ = "stepInTargets"
 
-  module Arguments = struct
-    (** Arguments for 'stepInTargets' request. *)
-    type t = {
-      frame_id : int [@key "frameId"]; (** The stack frame for which to retrieve the possible stepIn targets. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'stepInTargets' request. *)
+      type t = {
+        frame_id : int [@key "frameId"]; (** The stack frame for which to retrieve the possible stepIn targets. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      targets : Step_in_target.t; (** The possible stepIn targets of the specified source location. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'stepInTargets' request. *)
+      type t = {
+        frame_id : int [@key "frameId"]; (** The stack frame for which to retrieve the possible stepIn targets. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** This request retrieves the possible goto targets for the specified source location.
 These targets can be used in the 'goto' request.
 Clients should only call this request if the capability 'supportsGotoTargetsRequest' is true. *)
-module Goto_targets_request = struct
-  let command = "gotoTargets"
+module Goto_targets_command = struct
+  let type_ = "gotoTargets"
 
-  module Arguments = struct
-    (** Arguments for 'gotoTargets' request. *)
-    type t = {
-      source : Source.t; (** The source location for which the goto targets are determined. *)
-      line : int; (** The line location for which the goto targets are determined. *)
-      column : int option [@default None]; (** An optional column location for which the goto targets are determined. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'gotoTargets' request. *)
+      type t = {
+        source : Source.t; (** The source location for which the goto targets are determined. *)
+        line : int; (** The line location for which the goto targets are determined. *)
+        column : int option [@default None]; (** An optional column location for which the goto targets are determined. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      targets : Goto_target.t; (** The possible goto targets of the specified location. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'gotoTargets' request. *)
+      type t = {
+        source : Source.t; (** The source location for which the goto targets are determined. *)
+        line : int; (** The line location for which the goto targets are determined. *)
+        column : int option [@default None]; (** An optional column location for which the goto targets are determined. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Returns a list of possible completions for a given caret position and text.
 Clients should only call this request if the capability 'supportsCompletionsRequest' is true. *)
-module Completions_request = struct
-  let command = "completions"
+module Completions_command = struct
+  let type_ = "completions"
 
-  module Arguments = struct
-    (** Arguments for 'completions' request. *)
-    type t = {
-      frame_id : int option [@key "frameId"] [@default None]; (** Returns completions in the scope of this stack frame. If not specified, the completions are returned for the global scope. *)
-      text : string; (** One or more source lines. Typically this is the text a user has typed into the debug console before he asked for completion. *)
-      column : int; (** The character position for which to determine the completion proposals. *)
-      line : int option [@default None]; (** An optional line for which to determine the completion proposals. If missing the first line of the text is assumed. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'completions' request. *)
+      type t = {
+        frame_id : int option [@key "frameId"] [@default None]; (** Returns completions in the scope of this stack frame. If not specified, the completions are returned for the global scope. *)
+        text : string; (** One or more source lines. Typically this is the text a user has typed into the debug console before he asked for completion. *)
+        column : int; (** The character position for which to determine the completion proposals. *)
+        line : int option [@default None]; (** An optional line for which to determine the completion proposals. If missing the first line of the text is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      targets : Completion_item.t; (** The possible completions for . *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'completions' request. *)
+      type t = {
+        frame_id : int option [@key "frameId"] [@default None]; (** Returns completions in the scope of this stack frame. If not specified, the completions are returned for the global scope. *)
+        text : string; (** One or more source lines. Typically this is the text a user has typed into the debug console before he asked for completion. *)
+        column : int; (** The character position for which to determine the completion proposals. *)
+        line : int option [@default None]; (** An optional line for which to determine the completion proposals. If missing the first line of the text is assumed. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Retrieves the details of the exception that caused this event to be raised.
 Clients should only call this request if the capability 'supportsExceptionInfoRequest' is true. *)
-module Exception_info_request = struct
-  let command = "exceptionInfo"
+module Exception_info_command = struct
+  let type_ = "exceptionInfo"
 
-  module Arguments = struct
-    (** Arguments for 'exceptionInfo' request. *)
-    type t = {
-      thread_id : int [@key "threadId"]; (** Thread for which exception information should be retrieved. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'exceptionInfo' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Thread for which exception information should be retrieved. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      exception_id : string [@key "exceptionId"]; (** ID of the exception that was thrown. *)
-      description : string option [@default None]; (** Descriptive text for the exception provided by the debug adapter. *)
-      break_mode : Exception_break_mode.t [@key "breakMode"]; (** Mode that caused the exception notification to be raised. *)
-      details : Exception_details.t option [@default None]; (** Detailed information about the exception. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'exceptionInfo' request. *)
+      type t = {
+        thread_id : int [@key "threadId"]; (** Thread for which exception information should be retrieved. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Reads bytes from memory at the provided location.
 Clients should only call this request if the capability 'supportsReadMemoryRequest' is true. *)
-module Read_memory_request = struct
-  let command = "readMemory"
+module Read_memory_command = struct
+  let type_ = "readMemory"
 
-  module Arguments = struct
-    (** Arguments for 'readMemory' request. *)
-    type t = {
-      memory_reference : string [@key "memoryReference"]; (** Memory reference to the base location from which data should be read. *)
-      offset : int option [@default None]; (** Optional offset (in bytes) to be applied to the reference location before reading data. Can be negative. *)
-      count : int; (** Number of bytes to read at the specified location and offset. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'readMemory' request. *)
+      type t = {
+        memory_reference : string [@key "memoryReference"]; (** Memory reference to the base location from which data should be read. *)
+        offset : int option [@default None]; (** Optional offset (in bytes) to be applied to the reference location before reading data. Can be negative. *)
+        count : int; (** Number of bytes to read at the specified location and offset. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      address : string; (** The address of the first byte of data returned.
-      Treated as a hex value if prefixed with '0x', or as a decimal value otherwise. *)
-      unreadable_bytes : int option [@key "unreadableBytes"] [@default None]; (** The number of unreadable bytes encountered after the last successfully read byte.
-      This can be used to determine the number of bytes that must be skipped before a subsequent 'readMemory' request will succeed. *)
-      data : string option [@default None]; (** The bytes read from memory, encoded using base64. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'readMemory' request. *)
+      type t = {
+        memory_reference : string [@key "memoryReference"]; (** Memory reference to the base location from which data should be read. *)
+        offset : int option [@default None]; (** Optional offset (in bytes) to be applied to the reference location before reading data. Can be negative. *)
+        count : int; (** Number of bytes to read at the specified location and offset. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 
 (** Disassembles code stored at the provided location.
 Clients should only call this request if the capability 'supportsDisassembleRequest' is true. *)
-module Disassemble_request = struct
-  let command = "disassemble"
+module Disassemble_command = struct
+  let type_ = "disassemble"
 
-  module Arguments = struct
-    (** Arguments for 'disassemble' request. *)
-    type t = {
-      memory_reference : string [@key "memoryReference"]; (** Memory reference to the base location containing the instructions to disassemble. *)
-      offset : int option [@default None]; (** Optional offset (in bytes) to be applied to the reference location before disassembling. Can be negative. *)
-      instruction_offset : int option [@key "instructionOffset"] [@default None]; (** Optional offset (in instructions) to be applied after the byte offset (if any) before disassembling. Can be negative. *)
-      instruction_count : int [@key "instructionCount"]; (** Number of instructions to disassemble starting at the specified location and offset.
-      An adapter must return exactly this number of instructions - any unavailable instructions should be replaced with an implementation-defined 'invalid instruction' value. *)
-      resolve_symbols : bool option [@key "resolveSymbols"] [@default None]; (** If true, the adapter should attempt to resolve memory addresses and other values to symbolic names. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Request = struct
+    module Arguments = struct
+      (** Arguments for 'disassemble' request. *)
+      type t = {
+        memory_reference : string [@key "memoryReference"]; (** Memory reference to the base location containing the instructions to disassemble. *)
+        offset : int option [@default None]; (** Optional offset (in bytes) to be applied to the reference location before disassembling. Can be negative. *)
+        instruction_offset : int option [@key "instructionOffset"] [@default None]; (** Optional offset (in instructions) to be applied after the byte offset (if any) before disassembling. Can be negative. *)
+        instruction_count : int [@key "instructionCount"]; (** Number of instructions to disassemble starting at the specified location and offset.
+        An adapter must return exactly this number of instructions - any unavailable instructions should be replaced with an implementation-defined 'invalid instruction' value. *)
+        resolve_symbols : bool option [@key "resolveSymbols"] [@default None]; (** If true, the adapter should attempt to resolve memory addresses and other values to symbolic names. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Arguments.t Request.t
+    [@@deriving yojson]
   end
 
-  module Response_body = struct
-    type t = {
-      instructions : Disassembled_instruction.t; (** The list of disassembled instructions. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+  module Response = struct
+    module Body = struct
+      (** Arguments for 'disassemble' request. *)
+      type t = {
+        memory_reference : string [@key "memoryReference"]; (** Memory reference to the base location containing the instructions to disassemble. *)
+        offset : int option [@default None]; (** Optional offset (in bytes) to be applied to the reference location before disassembling. Can be negative. *)
+        instruction_offset : int option [@key "instructionOffset"] [@default None]; (** Optional offset (in instructions) to be applied after the byte offset (if any) before disassembling. Can be negative. *)
+        instruction_count : int [@key "instructionCount"]; (** Number of instructions to disassemble starting at the specified location and offset.
+        An adapter must return exactly this number of instructions - any unavailable instructions should be replaced with an implementation-defined 'invalid instruction' value. *)
+        resolve_symbols : bool option [@key "resolveSymbols"] [@default None]; (** If true, the adapter should attempt to resolve memory addresses and other values to symbolic names. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    type t = Body.t Response.t
+    [@@deriving yojson]
   end
 end
 

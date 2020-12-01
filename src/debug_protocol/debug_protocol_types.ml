@@ -1,27 +1,4 @@
-open Dap_util
-
-module type EVENT = sig
-  val event : string
-
-  module Body : sig
-    type t
-    [@@deriving yojson]
-  end
-end
-
-module type REQUEST = sig
-  val command : string
-
-  module Arguments : sig
-    type t
-    [@@deriving yojson]
-  end
-
-  module Response_body : sig
-    type t
-    [@@deriving yojson]
-  end
-end
+open Util
 
 module Any = struct
   type t = Yojson.Safe.t

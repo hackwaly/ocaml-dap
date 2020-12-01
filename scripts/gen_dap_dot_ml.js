@@ -45,8 +45,8 @@ function emit(str) {
 
 emit(`(** ${schema.description} *)\n`);
 emit(`(* Auto-generated from json schema. Do not edit manually. *)\n\n`);
-emit(`open Dap_util\n`);
-emit(`include Dap_types\n\n`);
+emit(`open Util\n\n`);
+emit(`include Debug_protocol_types\n\n`);
 
 const toOcamlName = (() => {
   function toSnakeCase(key) {
@@ -140,6 +140,9 @@ function genType(def, prop, parentDef) {
   }
 
   if (_.isEqual(_.sortBy(def.type), ['array', 'boolean', 'integer', 'null', 'number', 'object', 'string'])) {
+    if (parentDef.allOf != null && resolveDef(parentDef.allOf[0]) === types.ProtocolMessage) {
+      return `'a`;
+    }
     return 'Any.t';
   }
 
@@ -155,12 +158,16 @@ function genType(def, prop, parentDef) {
   }
 }
 
-function emitTypeDecl(emit, def) {
+function emitTypeDecl(emit, def, generic) {
   if (def != null && def.description) {
     emit(genDoc(def.description));
     emit('\n');
   }
-  emit(`type t =`);
+  if (generic) {
+    emit(`type 'a t =`);
+  } else {
+    emit(`type t =`);
+  }
   if (def == null || (def.type === 'object' && _.isEmpty(def.properties))) {
     emit(` Empty_dict.t\n`);
     emit(`[@@deriving yojson]`);
@@ -254,8 +261,9 @@ function emitTypeModule(typeName, def) {
   const prevTypeModuleName = currentTypeModuleName;
   currentTypeModuleName = toOcamlName(typeName);
   withBuffer(emit, (emit) => {
-    emitModule(emit, toOcamlName(typeName, true), (emit) => {
-      emitTypeDecl(emit, def);
+    const modName = toOcamlName(typeName, true);
+    emitModule(emit, modName, (emit) => {
+      emitTypeDecl(emit, def, ['Event', 'Request', 'Response'].includes(modName));
     });
     emit('\n');
   });
@@ -269,11 +277,14 @@ function emitEventModule(event, {doc, body}) {
       emit('\n');
     }
     emitModule(emit, toOcamlName(`${event}_event`, true), (emit) => {
-      emit(`let event = "${event}"\n`);
+      emit(`let type_ = "${event}"\n`);
       emit('\n');
       emitModule(emit, toOcamlName('body', true), (emit) => {
         emitTypeDecl(emit, body);
       });
+      emit('\n');
+      emit(`type t = Body.t Event.t\n`);
+      emit(`[@@deriving yojson]\n`);
     });
     emit('\n');
   });
@@ -285,15 +296,25 @@ function emitRequestModule(command, {doc, arguments, responseBody}) {
       emit(genDoc(doc));
       emit('\n');
     }
-    emitModule(emit, toOcamlName(`${command}_request`, true), (emit) => {
-      emit(`let command = "${command}"\n`);
+    emitModule(emit, toOcamlName(`${command}_command`, true), (emit) => {
+      emit(`let type_ = "${command}"\n`);
       emit('\n');
-      emitModule(emit, toOcamlName('arguments', true), (emit) => {
-        emitTypeDecl(emit, arguments);
+      emitModule(emit, toOcamlName('Request', true), (emit) => {
+        emitModule(emit, toOcamlName('Arguments', true), (emit) => {
+          emitTypeDecl(emit, arguments);
+        });
+        emit('\n');
+        emit(`type t = Arguments.t Request.t\n`);
+        emit(`[@@deriving yojson]\n`);
       });
       emit('\n');
-      emitModule(emit, toOcamlName('response_body', true), (emit) => {
-        emitTypeDecl(emit, responseBody);
+      emitModule(emit, toOcamlName('Response', true), (emit) => {
+        emitModule(emit, toOcamlName('Body', true), (emit) => {
+          emitTypeDecl(emit, arguments);
+        });
+        emit('\n');
+        emit(`type t = Body.t Response.t\n`);
+        emit(`[@@deriving yojson]\n`);
       });
     });
     emit('\n');
