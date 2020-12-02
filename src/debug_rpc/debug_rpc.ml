@@ -44,6 +44,10 @@ let event : type e. t -> (module EVENT with type Body.t = e) -> e React.E.t =
       else None
     )
 
+let send_event : type e. t -> (module EVENT with type Body.t = e) -> e -> unit Lwt.t =
+  fun rpc (module TheEvent) evt ->
+    send_message rpc (TheEvent.Body.to_yojson evt)
+
 let rec exec_command : type arg res. t -> (module COMMAND with type Request.Arguments.t = arg and type Response.Body.t = res) -> arg -> res Lwt.t =
   fun rpc (module Command) arg ->
     let req_seq = next_seq rpc in
