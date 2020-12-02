@@ -26,35 +26,45 @@ let send_message rpc msg_json =
   let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
   let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length msg_str)) in
   let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
-  Lwt_io.write rpc.out msg_str
+  let%lwt () = Lwt_io.write rpc.out msg_str in
+  Logs_lwt.debug (fun m -> m "message sent")
 
 let wait_response rpc req_seq =
-  let (waiter, wakener) = Lwt.wait () in
+  let (waiter, wakener) = Lwt.task () in
   assert (not (Hashtbl.mem rpc.wakeners req_seq));
   Hashtbl.replace rpc.wakeners req_seq wakener;
   let%lwt res = waiter in
   Lwt.return res
 
 let event : type e. t -> (module EVENT with type Body.t = e) -> e React.E.t =
-  fun rpc (module TheEvent) ->
+  fun rpc (module The_event) ->
     let (event_e, _) = rpc.event in
     event_e |> React.E.fmap (fun evt ->
-      if evt.Event.event = TheEvent.type_ then
-        TheEvent.Body.of_yojson evt.body |> Result.to_option
+      if evt.Event.event = The_event.type_ then
+        The_event.Body.of_yojson evt.body |> Result.to_option
       else None
     )
 
 let send_event : type e. t -> (module EVENT with type Body.t = e) -> e -> unit Lwt.t =
-  fun rpc (module TheEvent) evt ->
-    send_message rpc (TheEvent.Body.to_yojson evt)
+  fun rpc (module The_event) body ->
+    send_message rpc Event.(
+      make
+        ~seq:(next_seq rpc)
+        ~type_:Event.Type.Event
+        ~event:(The_event.type_)
+        ~body:(The_event.Body.to_yojson body)
+        ()
+      |> to_yojson
+    )
 
 let rec exec_command : type arg res. t -> (module COMMAND with type Request.Arguments.t = arg and type Response.Body.t = res) -> arg -> res Lwt.t =
-  fun rpc (module Command) arg ->
+  fun rpc (module The_command) arg ->
     let req_seq = next_seq rpc in
     let req = Request.make
       ~seq:req_seq
-      ~arguments:(Command.Request.Arguments.to_yojson arg)
-      ~command:Command.type_
+      ~type_:Request.Type.Request
+      ~arguments:(The_command.Request.Arguments.to_yojson arg)
+      ~command:The_command.type_
       ()
     in
     let%lwt () = send_message rpc (Request.to_yojson req) in
@@ -62,7 +72,6 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Request.Argu
       try%lwt
         wait_response rpc req_seq
       with Lwt.Canceled -> (
-        (*  *)
         Hashtbl.remove rpc.wakeners req_seq;
         let%lwt () = exec_command rpc (module Cancel_command) Cancel_command.Request.Arguments.(
           make ~request_id:(Some req_seq) ()
@@ -70,29 +79,31 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Request.Argu
         Lwt.fail Lwt.Canceled
       )
     in
-    let res_body = Command.Response.Body.of_yojson res.body |> Result.get_ok in
+    let res_body = The_command.Response.Body.of_yojson res.body |> Result.get_ok in
     Lwt.return res_body
 
 let register_command : type arg res. t -> (module COMMAND with type Request.Arguments.t = arg and type Response.Body.t = res) -> (t -> arg -> string -> res Lwt.t) -> unit =
-  fun rpc (module TheCommand) f ->
+  fun rpc (module The_command) f ->
     let handler rpc (req : Request.t) raw_msg =
       let%lwt res =
         try%lwt
-          let%lwt res = f rpc (TheCommand.Request.Arguments.of_yojson req.arguments |> Result.get_ok) raw_msg in
+          let%lwt res = f rpc (The_command.Request.Arguments.of_yojson req.arguments |> Result.get_ok) raw_msg in
           Lwt.return (Response.make
             ~seq:(next_seq rpc)
+            ~type_:Response.Type.Response
             ~request_seq:req.seq
             ~success:true
-            ~command:TheCommand.type_
-            ~body:(TheCommand.Response.Body.to_yojson res)
+            ~command:The_command.type_
+            ~body:(The_command.Response.Body.to_yojson res)
             ()
           )
         with exn ->
           Lwt.return (Response.make
             ~seq:(next_seq rpc)
+            ~type_:Response.Type.Response
             ~request_seq:req.seq
             ~success:true
-            ~command:TheCommand.type_
+            ~command:The_command.type_
             ~message:(Some (
               match exn with
               | Lwt.Canceled -> Response.Message.Cancelled
@@ -103,7 +114,7 @@ let register_command : type arg res. t -> (module COMMAND with type Request.Argu
       in
       send_message rpc (res |> Response.to_yojson)
     in
-    Hashtbl.replace rpc.handlers TheCommand.type_ handler
+    Hashtbl.replace rpc.handlers The_command.type_ handler
 
 let handle_cancel rpc (arg : Cancel_command.Request.Arguments.t) _raw_msg =
   match arg.request_id with

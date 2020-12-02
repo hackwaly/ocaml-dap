@@ -51,7 +51,7 @@ module Request = struct
 
   type t = {
     seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
-    type_ : Type.t [@key "type"] [@default Type.Request];
+    type_ : Type.t [@key "type"];
     command : string; (** The command to execute. *)
     arguments : Yojson.Safe.t [@default `Assoc []]; (** Object containing arguments for the command. *)
   }
@@ -74,7 +74,7 @@ module Event = struct
 
   type t = {
     seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
-    type_ : Type.t [@key "type"] [@default Type.Event];
+    type_ : Type.t [@key "type"];
     event : string; (** Type of event. *)
     body : Yojson.Safe.t [@default `Assoc []]; (** Event-specific information. *)
   }
@@ -114,7 +114,7 @@ module Response = struct
 
   type t = {
     seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
-    type_ : Type.t [@key "type"] [@default Type.Response];
+    type_ : Type.t [@key "type"];
     request_seq : int; (** Sequence number of the corresponding request. *)
     success : bool; (** Outcome of the request.
     If true, the request was successful and the 'body' attribute may contain the result of the request.

@@ -200,13 +200,13 @@ function emitTypeDecl(emit, def, generic) {
         if (generic && ['arguments', 'body'].includes(prop)) {
           emit(` [@default \`Assoc []]`);
         } else if (generic && prop === 'type') {
-          if (def.allOf[1].properties.event) {
-            emit(` [@default Type.Event]`);
-          } else if (def.allOf[1].properties.body) {
-            emit(` [@default Type.Response]`);
-          } else {
-            emit(` [@default Type.Request]`);
-          }
+          // if (def.allOf[1].properties.event) {
+          //   emit(` [@default Type.Event]`);
+          // } else if (def.allOf[1].properties.body) {
+          //   emit(` [@default Type.Response]`);
+          // } else {
+          //   emit(` [@default Type.Request]`);
+          // }
         } else if (isOptional) {
           emit(` [@default None]`);
         }

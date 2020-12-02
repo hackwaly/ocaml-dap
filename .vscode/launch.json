@@ -4,7 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
+      {
+        "name": "Launch test",
+        "type": "ocaml-debugger",
+        "request": "launch",
+        "program": "${workspaceFolder}/_build/default/src/debug_rpc_test/.debug_rpc_test.inline-tests/inline_test_runner_debug_rpc_test.bc"
+      },
+      {
             "type": "pwa-node",
             "request": "launch",
             "name": "Launch Program",
