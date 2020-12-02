@@ -27,7 +27,7 @@ for (let key of Object.keys(schema.definitions)) {
     requests[cmd] = requests[cmd] || {};
     requests[cmd].doc = def.allOf[1].description;
     requests[cmd].arguments = resolveDef((def.allOf[1].properties || {}).arguments);
-  } else if (key.endsWith('Response') && key !== 'Response') {
+  } else if (key.endsWith('Response') && key !== 'Response' && key !== 'ErrorResponse') {
     const cmd = key.slice(0, -'Response'.length).replace(/^[A-Z]/, c => c.toLowerCase());
     requests[cmd] = requests[cmd] || {};
     requests[cmd].responseBody = resolveDef((def.allOf[1].properties || {}).body);

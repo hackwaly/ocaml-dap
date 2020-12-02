@@ -128,6 +128,41 @@ module Response = struct
   [@@deriving make, yojson {strict = false}]
 end
 
+module Message = struct
+  module Variables = struct
+    (** An object used as a dictionary for looking up the variables in the format string. *)
+    type t = Empty_dict.t
+    [@@deriving yojson]
+  end
+
+  (** A structured message object. Used to return errors from requests. *)
+  type t = {
+    id : int; (** Unique identifier for the message. *)
+    format : string; (** A format string for the message. Embedded variables have the form '{name}'.
+    If variable name starts with an underscore character, the variable does not contain user data (PII) and can be safely used for telemetry purposes. *)
+    variables : Variables.t option [@default None]; (** An object used as a dictionary for looking up the variables in the format string. *)
+    send_telemetry : bool option [@key "sendTelemetry"] [@default None]; (** If true send to telemetry. *)
+    show_user : bool option [@key "showUser"] [@default None]; (** If true show user. *)
+    url : string option [@default None]; (** An optional url where additional information about this message can be found. *)
+    url_label : string option [@key "urlLabel"] [@default None]; (** An optional label that is presented to the user as the UI for opening the url. *)
+  }
+  [@@deriving make, yojson {strict = false}]
+end
+
+module Error_response = struct
+  module Body = struct
+    type t = {
+      error : Message.t option [@default None]; (** An optional, structured error message. *)
+    }
+    [@@deriving make, yojson {strict = false}]
+  end
+
+  type t = {
+    body : Body.t;
+  }
+  [@@deriving make, yojson {strict = false}]
+end
+
 module Exception_breakpoints_filter = struct
   (** An ExceptionBreakpointsFilter is shown in the UI as an filter option for configuring how exceptions are dealt with. *)
   type t = {
@@ -238,27 +273,6 @@ module Capabilities = struct
     supports_stepping_granularity : bool option [@key "supportsSteppingGranularity"] [@default None]; (** The debug adapter supports stepping granularities (argument 'granularity') for the stepping requests. *)
     supports_instruction_breakpoints : bool option [@key "supportsInstructionBreakpoints"] [@default None]; (** The debug adapter supports adding breakpoints based on instruction references. *)
     supports_exception_filter_options : bool option [@key "supportsExceptionFilterOptions"] [@default None]; (** The debug adapter supports 'filterOptions' as an argument on the 'setExceptionBreakpoints' request. *)
-  }
-  [@@deriving make, yojson {strict = false}]
-end
-
-module Message = struct
-  module Variables = struct
-    (** An object used as a dictionary for looking up the variables in the format string. *)
-    type t = Empty_dict.t
-    [@@deriving yojson]
-  end
-
-  (** A structured message object. Used to return errors from requests. *)
-  type t = {
-    id : int; (** Unique identifier for the message. *)
-    format : string; (** A format string for the message. Embedded variables have the form '{name}'.
-    If variable name starts with an underscore character, the variable does not contain user data (PII) and can be safely used for telemetry purposes. *)
-    variables : Variables.t option [@default None]; (** An object used as a dictionary for looking up the variables in the format string. *)
-    send_telemetry : bool option [@key "sendTelemetry"] [@default None]; (** If true send to telemetry. *)
-    show_user : bool option [@key "showUser"] [@default None]; (** If true show user. *)
-    url : string option [@default None]; (** An optional url where additional information about this message can be found. *)
-    url_label : string option [@key "urlLabel"] [@default None]; (** An optional label that is presented to the user as the UI for opening the url. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -1351,26 +1365,6 @@ module Invalidated_event = struct
       stack_frame_id : int option [@key "stackFrameId"] [@default None]; (** If specified, the client only needs to refetch data related to this stack frame (and the 'threadId' is ignored). *)
     }
     [@@deriving make, yojson {strict = false}]
-  end
-end
-
-module Error_command = struct
-  let type_ = "error"
-
-  module Request = struct
-    module Arguments = struct
-      type t = Empty_dict.t
-      [@@deriving yojson]
-    end
-  end
-
-  module Response = struct
-    module Body = struct
-      type t = {
-        error : Message.t option [@default None]; (** An optional, structured error message. *)
-      }
-      [@@deriving make, yojson {strict = false}]
-    end
   end
 end
 

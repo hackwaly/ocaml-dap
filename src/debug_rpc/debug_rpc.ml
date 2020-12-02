@@ -3,10 +3,9 @@ open Debug_protocol
 type t = {
   in_ : Lwt_io.input_channel;
   out : Lwt_io.output_channel;
-  handle_timeout : int;
   mutable next_seq : int;
   wakeners : (int, Response.t Lwt.u) Hashtbl.t;
-  handlers : (string, t -> Request.t -> unit Lwt.t) Hashtbl.t;
+  handlers : (string, t -> Request.t -> string -> unit Lwt.t) Hashtbl.t;
   cancel_signals : (int, unit Lwt.u) Hashtbl.t;
   event : Event.t React.E.t * (?step:React.step -> Event.t-> unit);
 }
@@ -22,21 +21,12 @@ let next_seq rpc =
   rpc.next_seq <- rpc.next_seq + 1;
   seq
 
-let send_message_json rpc msg_json =
+let send_message rpc msg_json =
   let msg_str = Yojson.Safe.to_string msg_json in
   let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
   let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length msg_str)) in
   let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
   Lwt_io.write rpc.out msg_str
-
-let send_request rpc req =
-  send_message_json rpc (Request.to_yojson req)
-
-let send_response rpc res =
-  send_message_json rpc (Response.to_yojson res)
-
-let send_event rpc evt =
-  send_message_json rpc (Event.to_yojson evt)
 
 let wait_response rpc req_seq =
   let (waiter, wakener) = Lwt.wait () in
@@ -63,7 +53,7 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Request.Argu
       ~command:Command.type_
       ()
     in
-    let%lwt () = send_request rpc req in
+    let%lwt () = send_message rpc (Request.to_yojson req) in
     let%lwt res =
       try%lwt
         wait_response rpc req_seq
@@ -79,36 +69,76 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Request.Argu
     let res_body = Command.Response.Body.of_yojson res.body |> Result.get_ok in
     Lwt.return res_body
 
-let register_command : type arg res. t -> (module COMMAND with type Request.Arguments.t = arg and type Response.Body.t = res) -> arg -> res Lwt.t -> unit =
-  assert false
+let register_command : type arg res. t -> (module COMMAND with type Request.Arguments.t = arg and type Response.Body.t = res) -> (t -> arg -> string -> res Lwt.t) -> unit =
+  fun rpc (module TheCommand) f ->
+    let handler rpc (req : Request.t) raw_msg =
+      let%lwt res =
+        try%lwt
+          let%lwt res = f rpc (TheCommand.Request.Arguments.of_yojson req.arguments |> Result.get_ok) raw_msg in
+          Lwt.return (Response.make
+            ~seq:(next_seq rpc)
+            ~request_seq:req.seq
+            ~success:true
+            ~command:TheCommand.type_
+            ~body:(TheCommand.Response.Body.to_yojson res)
+            ()
+          )
+        with exn ->
+          Lwt.return (Response.make
+            ~seq:(next_seq rpc)
+            ~request_seq:req.seq
+            ~success:true
+            ~command:TheCommand.type_
+            ~message:(Some (
+              match exn with
+              | Lwt.Canceled -> Response.Message.Cancelled
+              | _ -> Response.Message.Custom (Printexc.to_string exn)
+            ))
+            ()
+          )
+      in
+      send_message rpc (res |> Response.to_yojson)
+    in
+    Hashtbl.replace rpc.handlers TheCommand.type_ handler
 
-module Parsers = struct
-  let message =
-    let open Angstrom in
-    let eol = string "\r\n" in
-    let colon = string ": " in
-    let is_colon = function ':' -> true | _ -> false in
-    let is_eol = function '\r' -> true | _ -> false in
-    let header_field = lift2
-        (fun key value -> key, value)
-        (take_till is_colon <* colon)
-        (take_till is_eol <* eol) in
-    (many1 header_field <* eol) >>= fun headers ->
-    let content_length = int_of_string (List.assoc "Content-Length" headers) in
-    take content_length
-end
+let handle_cancel rpc (arg : Cancel_command.Request.Arguments.t) _raw_msg =
+  match arg.request_id with
+  | Some req_seq -> (
+    let cancel_signal = Hashtbl.find rpc.cancel_signals req_seq in
+    Lwt.wakeup_later_exn cancel_signal Lwt.Canceled;
+    Lwt.return ()
+  )
+  | _ -> Logs_lwt.warn (fun m -> m "Unsupported cancel request")
 
-let make ~in_ ~out ?(handle_timeout=60000) ?(next_seq=0) () =
-  { in_;
+let create ~in_ ~out ?(next_seq=0) () =
+  let rpc = {
+    in_;
     out;
     next_seq;
-    handle_timeout;
     wakeners = Hashtbl.create 0;
     handlers = Hashtbl.create 0;
     cancel_signals = Hashtbl.create 0;
-    event = React.E.create () }
+    event = React.E.create ()
+  } in
+  register_command rpc (module Cancel_command) handle_cancel;
+  rpc
 
 let start rpc =
+  let module Parsers = struct
+    let message =
+      let open Angstrom in
+      let eol = string "\r\n" in
+      let colon = string ": " in
+      let is_colon = function ':' -> true | _ -> false in
+      let is_eol = function '\r' -> true | _ -> false in
+      let header_field = lift2
+          (fun key value -> key, value)
+          (take_till is_colon <* colon)
+          (take_till is_eol <* eol) in
+      (many1 header_field <* eol) >>= fun headers ->
+      let content_length = int_of_string (List.assoc "Content-Length" headers) in
+      take content_length
+  end in
   let dispatch_event evt _raw_msg =
     let (_, send_event) = rpc.event in
     send_event evt;
@@ -120,7 +150,7 @@ let start rpc =
       let (waiter, wakener) = Lwt.wait () in
       Hashtbl.replace rpc.cancel_signals req.Request.seq wakener;
       Lwt.pick [
-        handler rpc req;
+        handler rpc req raw_msg;
         waiter
       ]
     )
