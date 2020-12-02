@@ -1,5 +1,32 @@
 open Util
 
+module type EVENT = sig
+  val type_ : string
+
+  module Body : sig
+    type t
+    [@@deriving yojson]
+  end
+end
+
+module type COMMAND = sig
+  val type_ : string
+
+  module Request : sig
+    module Arguments : sig
+      type t
+      [@@deriving yojson]
+    end
+  end
+
+  module Response : sig
+    module Body : sig
+      type t
+      [@@deriving yojson]
+    end
+  end
+end
+
 module Any = struct
   type t = Yojson.Safe.t
 

@@ -1,7 +1,12 @@
 EXCLUDE_QUERY_DIR
+B /Users/wenyuxiang/.opam/4.11.1/lib/angstrom
+B /Users/wenyuxiang/.opam/4.11.1/lib/angstrom-lwt-unix
+B /Users/wenyuxiang/.opam/4.11.1/lib/bigarray-compat
+B /Users/wenyuxiang/.opam/4.11.1/lib/bigstringaf
 B /Users/wenyuxiang/.opam/4.11.1/lib/biniou
 B /Users/wenyuxiang/.opam/4.11.1/lib/bytes
 B /Users/wenyuxiang/.opam/4.11.1/lib/easy-format
+B /Users/wenyuxiang/.opam/4.11.1/lib/logs
 B /Users/wenyuxiang/.opam/4.11.1/lib/lwt
 B /Users/wenyuxiang/.opam/4.11.1/lib/lwt/unix
 B /Users/wenyuxiang/.opam/4.11.1/lib/mmap
@@ -12,14 +17,20 @@ B /Users/wenyuxiang/.opam/4.11.1/lib/ocplib-endian/bigstring
 B /Users/wenyuxiang/.opam/4.11.1/lib/ppx_deriving/runtime
 B /Users/wenyuxiang/.opam/4.11.1/lib/ppx_deriving_yojson/runtime
 B /Users/wenyuxiang/.opam/4.11.1/lib/ppx_here/runtime-lib
+B /Users/wenyuxiang/.opam/4.11.1/lib/react
 B /Users/wenyuxiang/.opam/4.11.1/lib/result
 B /Users/wenyuxiang/.opam/4.11.1/lib/seq
 B /Users/wenyuxiang/.opam/4.11.1/lib/yojson
 B ../../_build/default/src/debug_protocol/.debug_protocol.objs/byte
 B ../../_build/default/src/debug_rpc/.debug_rpc.objs/byte
+S /Users/wenyuxiang/.opam/4.11.1/lib/angstrom
+S /Users/wenyuxiang/.opam/4.11.1/lib/angstrom-lwt-unix
+S /Users/wenyuxiang/.opam/4.11.1/lib/bigarray-compat
+S /Users/wenyuxiang/.opam/4.11.1/lib/bigstringaf
 S /Users/wenyuxiang/.opam/4.11.1/lib/biniou
 S /Users/wenyuxiang/.opam/4.11.1/lib/bytes
 S /Users/wenyuxiang/.opam/4.11.1/lib/easy-format
+S /Users/wenyuxiang/.opam/4.11.1/lib/logs
 S /Users/wenyuxiang/.opam/4.11.1/lib/lwt
 S /Users/wenyuxiang/.opam/4.11.1/lib/lwt/unix
 S /Users/wenyuxiang/.opam/4.11.1/lib/mmap
@@ -30,10 +41,11 @@ S /Users/wenyuxiang/.opam/4.11.1/lib/ocplib-endian/bigstring
 S /Users/wenyuxiang/.opam/4.11.1/lib/ppx_deriving/runtime
 S /Users/wenyuxiang/.opam/4.11.1/lib/ppx_deriving_yojson/runtime
 S /Users/wenyuxiang/.opam/4.11.1/lib/ppx_here/runtime-lib
+S /Users/wenyuxiang/.opam/4.11.1/lib/react
 S /Users/wenyuxiang/.opam/4.11.1/lib/result
 S /Users/wenyuxiang/.opam/4.11.1/lib/seq
 S /Users/wenyuxiang/.opam/4.11.1/lib/yojson
 S ../debug_protocol
 S .
-FLG -ppx '/Users/wenyuxiang/Side_Projects/ocaml-dap/_build/default/.ppx/e3c542a85033fed13ee0a78a5765ff49/ppx.exe --as-ppx --cookie '\''library-name="debug_rpc"'\'''
+FLG -ppx '/Users/wenyuxiang/Side_Projects/ocaml-dap/_build/default/.ppx/9b8724ce45c8a8d6bf1ba7b45f6bfce8/ppx.exe --as-ppx --cookie '\''library-name="debug_rpc"'\'''
 FLG -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs
