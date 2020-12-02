@@ -102,9 +102,17 @@ let%expect_test "cancellation" =
   let client_rpc, server_rpc = create_rpc_pair () in
   let handle_null_command _rpc (_arg : Null_command.Request.Arguments.t) _raw_msg =
     Format.printf "1\n";
-    let%lwt () = Lwt_unix.sleep 1.0 in
-    Format.printf "2\n";
-    Lwt.return ()
+    Lwt.catch (fun () -> (
+      let%lwt () = Lwt_unix.sleep 1.0 in
+      Format.printf "2\n";
+      Lwt.return ()
+    )) (fun err -> (
+      let () = match err with
+      | Lwt.Canceled -> Format.printf "6\n"
+      | _ -> Format.printf "7\n";
+      in
+      Lwt.return ()
+    ));
   in
   Debug_rpc.register_command server_rpc (module Null_command) handle_null_command;
   Lwt.async (fun () -> (
@@ -137,6 +145,7 @@ let%expect_test "cancellation" =
   [%expect {|
     3
     1
+    6
     5 |}]
 
 let%expect_test "send_event" =
