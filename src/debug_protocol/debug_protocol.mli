@@ -102,7 +102,7 @@ module Message : sig
   (** A structured message object. Used to return errors from requests. *)
   type t = {
     id : int; (** Unique identifier for the message. *)
-    format : string; (** A format string for the message. Embedded variables have the form '{name}'.
+    format : string; (** A format string for the message. Embedded variables have the form '\{name\}'.
     If variable name starts with an underscore character, the variable does not contain user data (PII) and can be safely used for telemetry purposes. *)
     variables : Variables.t option [@default None]; (** An object used as a dictionary for looking up the variables in the format string. *)
     send_telemetry : bool option [@key "sendTelemetry"] [@default None]; (** If true send to telemetry. *)
@@ -468,7 +468,7 @@ module Source_breakpoint : sig
     The backend is expected to interpret the expression as needed.
     The attribute is only honored by a debug adapter if the capability 'supportsHitConditionalBreakpoints' is true. *)
     log_message : string option [@key "logMessage"] [@default None]; (** If this attribute exists and is non-empty, the backend must not 'break' (stop)
-    but log the message instead. Expressions within {} are interpolated.
+    but log the message instead. Expressions within \{\} are interpolated.
     The attribute is only honored by a debug adapter if the capability 'supportsLogPoints' is true. *)
   }
   [@@deriving make, yojson {strict = false}]

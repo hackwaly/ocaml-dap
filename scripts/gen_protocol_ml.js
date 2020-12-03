@@ -104,7 +104,7 @@ function emitModule(emit, modId, f) {
 }
 
 function genDoc(str) {
-  return `(** ${str} *)`
+  return `(** ${str.replace(/([{}\[\]@])/g, '\\$1')} *)`;
 }
 
 let currentTypeModuleName;
