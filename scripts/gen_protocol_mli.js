@@ -270,7 +270,7 @@ function emitEventModule(event, {doc, body}) {
     emitModule(emit, toOcamlName(`${event}_event`, true), (emit) => {
       emit(`val type_ : string\n`);
       emit('\n');
-      emitModule(emit, toOcamlName('body', true), (emit) => {
+      emitModule(emit, toOcamlName('Payload', true), (emit) => {
         emitTypeDecl(emit, body);
       });
     });
@@ -287,16 +287,12 @@ function emitRequestModule(command, {doc, arguments, responseBody}) {
     emitModule(emit, toOcamlName(`${command}_command`, true), (emit) => {
       emit(`val type_ : string\n`);
       emit('\n');
-      emitModule(emit, toOcamlName('Request', true), (emit) => {
-        emitModule(emit, toOcamlName('Arguments', true), (emit) => {
-          emitTypeDecl(emit, arguments);
-        });
+      emitModule(emit, toOcamlName('Arguments', true), (emit) => {
+        emitTypeDecl(emit, arguments);
       });
       emit('\n');
-      emitModule(emit, toOcamlName('Response', true), (emit) => {
-        emitModule(emit, toOcamlName('Body', true), (emit) => {
-          emitTypeDecl(emit, responseBody);
-        });
+      emitModule(emit, toOcamlName('Result', true), (emit) => {
+        emitTypeDecl(emit, responseBody);
       });
     });
     emit('\n');

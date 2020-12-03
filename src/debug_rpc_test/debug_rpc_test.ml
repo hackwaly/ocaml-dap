@@ -3,47 +3,39 @@ open Lwt_expect
 module Foo_command = struct
   let type_ = "foo"
 
-  module Request = struct
-    module Arguments = struct
-      type t = {
-        foo : string;
-      }
-      [@@deriving yojson]
-    end
+  module Arguments = struct
+    type t = {
+      foo : string;
+    }
+    [@@deriving yojson]
   end
 
-  module Response = struct
-    module Body = struct
-      type t = {
-        bar : string;
-      }
-      [@@deriving yojson]
-    end
+  module Result = struct
+    type t = {
+      bar : string;
+    }
+    [@@deriving yojson]
   end
 end
 
 module Null_command = struct
   let type_ = "null"
 
-  module Request = struct
-    module Arguments = struct
-      type t = unit
-      [@@deriving yojson]
-    end
+  module Arguments = struct
+    type t = unit
+    [@@deriving yojson]
   end
 
-  module Response = struct
-    module Body = struct
-      type t = unit
-      [@@deriving yojson]
-    end
+  module Result = struct
+    type t = unit
+    [@@deriving yojson]
   end
 end
 
 module Int_event = struct
   let type_ = "int"
 
-  module Body = struct
+  module Payload = struct
     type t = int
     [@@deriving yojson]
   end
@@ -81,9 +73,9 @@ let lwt_reporter () =
 
 let%expect_test "exec_command" =
   let client_rpc, server_rpc = create_rpc_pair () in
-  let handle_foo_command _rpc (arg : Foo_command.Request.Arguments.t) _raw_msg =
+  let handle_foo_command _rpc (arg : Foo_command.Arguments.t) _raw_msg =
     Format.printf "foo: %s\n" arg.foo;
-    Lwt.return Foo_command.Response.Body.{bar = "2000"}
+    Lwt.return Foo_command.Result.{bar = "2000"}
   in
   Debug_rpc.register_command server_rpc (module Foo_command) handle_foo_command;
   Lwt.async (fun () -> (
@@ -92,7 +84,7 @@ let%expect_test "exec_command" =
   Lwt.async (fun () -> (
     Debug_rpc.start client_rpc
   ));
-  let%lwt res = Debug_rpc.exec_command client_rpc (module Foo_command) Foo_command.Request.Arguments.{foo = "1000"} in
+  let%lwt res = Debug_rpc.exec_command client_rpc (module Foo_command) Foo_command.Arguments.{foo = "1000"} in
   Format.printf "bar: %s\n" res.bar;
   [%expect {|
     foo: 1000
@@ -100,7 +92,7 @@ let%expect_test "exec_command" =
 
 let%expect_test "cancellation" =
   let client_rpc, server_rpc = create_rpc_pair () in
-  let handle_null_command _rpc (_arg : Null_command.Request.Arguments.t) _raw_msg =
+  let handle_null_command _rpc (_arg : Null_command.Arguments.t) _raw_msg =
     Format.printf "1\n";
     Lwt.catch (fun () -> (
       let%lwt () = Lwt_unix.sleep 1.0 in
