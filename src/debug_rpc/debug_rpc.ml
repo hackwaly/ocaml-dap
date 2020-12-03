@@ -1,5 +1,8 @@
 open Debug_protocol
 
+let src = Logs.Src.create "dap.rpc.Debug_rpc"
+module Log = (val Logs_lwt.src_log src : Logs_lwt.LOG)
+
 type t = {
   in_ : Lwt_io.input_channel;
   out : Lwt_io.output_channel;
@@ -10,31 +13,31 @@ type t = {
   event : Event.t React.E.t * (?step:React.step -> Event.t-> unit);
 }
 
-let error_tag : exn Logs.Tag.def =
-  Logs.Tag.def "error" ~doc:"Exception" (fun pp ex -> Format.pp_print_string pp (Printexc.to_string ex))
-
-let message_tag : string Logs.Tag.def =
-  Logs.Tag.def "message" ~doc:"Debug adapter protocol message" Format.pp_print_string
-
 let next_seq rpc =
   let seq = rpc.next_seq in
   rpc.next_seq <- rpc.next_seq + 1;
   seq
 
 let send_message rpc msg_json =
-  let msg_str = Yojson.Safe.to_string msg_json in
+  let raw_msg = Yojson.Safe.to_string msg_json in
   let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
-  let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length msg_str)) in
+  let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length raw_msg)) in
   let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
-  let%lwt () = Lwt_io.write rpc.out msg_str in
-  Logs_lwt.debug (fun m -> m "message sent")
+  let%lwt () = Lwt_io.write rpc.out raw_msg in
+  Log.debug (fun m -> m "Message sent -- %s" raw_msg)
 
 let wait_response rpc req_seq =
-  let (waiter, wakener) = Lwt.task () in
-  assert (not (Hashtbl.mem rpc.wakeners req_seq));
-  Hashtbl.replace rpc.wakeners req_seq wakener;
-  let%lwt res = waiter in
-  Lwt.return res
+  let cleanup () =
+    Hashtbl.remove rpc.wakeners req_seq;
+    Lwt.return ()
+  in
+  Lwt.finalize (fun () ->
+    let (waiter, wakener) = Lwt.task () in
+    assert (not (Hashtbl.mem rpc.wakeners req_seq));
+    Hashtbl.replace rpc.wakeners req_seq wakener;
+    let%lwt res = waiter in
+    Lwt.return res
+  ) cleanup
 
 let event : type e. t -> (module EVENT with type Body.t = e) -> e React.E.t =
   fun rpc (module The_event) ->
@@ -72,7 +75,6 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Request.Argu
       try%lwt
         wait_response rpc req_seq
       with Lwt.Canceled -> (
-        Hashtbl.remove rpc.wakeners req_seq;
         let%lwt () = exec_command rpc (module Cancel_command) Cancel_command.Request.Arguments.(
           make ~request_id:(Some req_seq) ()
         ) in
@@ -123,7 +125,7 @@ let handle_cancel rpc (arg : Cancel_command.Request.Arguments.t) _raw_msg =
     Lwt.wakeup_later_exn cancel_signal Lwt.Canceled;
     Lwt.return ()
   )
-  | _ -> Logs_lwt.warn (fun m -> m "Unsupported cancel request")
+  | _ -> Log.warn (fun m -> m "Unsupported cancel request")
 
 let create ~in_ ~out ?(next_seq=0) () =
   let rpc = {
@@ -164,24 +166,29 @@ let start rpc =
     | Some handler -> (
       let (waiter, wakener) = Lwt.wait () in
       Hashtbl.replace rpc.cancel_signals req.Request.seq wakener;
-      Lwt.pick [
+      let cleanup () =
+        Hashtbl.remove rpc.cancel_signals req.Request.seq;
+        Lwt.return ()
+      in
+      Lwt.finalize (fun () -> Lwt.pick [
         handler rpc req raw_msg;
-        waiter
-      ]
+        waiter;
+      ]) cleanup
     )
     | None -> (
-      Logs_lwt.warn (fun m -> m "Can not find handler" ~tags:Logs.Tag.(empty |> add message_tag raw_msg))
+      Log.warn (fun m -> m "Can not find handler")
     )
   in
-  let dispatch_response res raw_msg =
+  let dispatch_response res _raw_msg =
     let () =
     match Hashtbl.find_opt rpc.wakeners res.Response.request_seq with
     | Some wakener -> Lwt.wakeup_later wakener res
-    | None -> Logs.debug (fun m -> m "Response skipped" ~tags:Logs.Tag.(empty |> add message_tag raw_msg))
+    | None -> Logs.debug (fun m -> m "Response skipped")
     in
     Lwt.return ()
   in
   let dispatch raw_msg =
+    let%lwt () = Log.debug (fun m -> m "Message recv -- %s" raw_msg) in
     try%lwt
       let msg_json = Yojson.Safe.from_string raw_msg in
       let msg = Protocol_message.of_yojson msg_json |> Result.get_ok in
@@ -193,8 +200,8 @@ let start rpc =
       | {type_ = Protocol_message.Type.Response; _} ->
         dispatch_response (Response.of_yojson msg_json |> Result.get_ok) raw_msg
       | _ -> failwith "Unsupported message type"
-    with err -> Logs_lwt.err (
-      fun m -> m "%s" "Dispatch failed" ~tags:Logs.Tag.(empty |> add error_tag err |> add message_tag raw_msg)
+    with err -> Log.err (
+      fun m -> m "Dispatch failed: %s\n%s" (Printexc.to_string err) (Printexc.get_backtrace ())
     )
   in
   try%lwt (
