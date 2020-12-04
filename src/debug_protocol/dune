@@ -1,6 +1,6 @@
 (library
  (name debug_protocol)
- (public_name dap)
+ (public_name dap.types)
  (preprocess (pps ppx_deriving_yojson ppx_here ppx_deriving.make))
  (libraries yojson ppx_deriving_yojson.runtime))
 

@@ -157,13 +157,19 @@ function genType(def, prop, parentDef) {
   }
 }
 
-function emitTypeDecl(emit, def, generic) {
+const emittedTypes = new Set();
+
+function emitTypeDecl(emit, def, {generic, isEmitTypeModule} = {}) {
   if (def != null && def.description) {
     emit(genDoc(def.description));
     emit('\n');
   }
   emit(`type t =`);
-  if (def == null || (def.type === 'object' && _.isEmpty(def.properties))) {
+  if (!isEmitTypeModule && Object.entries(types).some(it => it[1] === def)) {
+    const typeName = Object.entries(types).find(it => it[1] === def)[0];
+    emit(` ${toOcamlName(typeName)}.t`);
+    emit(`[@@deriving yojson]`);
+  } else if (def == null || (def.type === 'object' && _.isEmpty(def.properties))) {
     emit(` Empty_dict.t\n`);
     emit(`[@@deriving yojson]`);
   } else if (def.type === 'object' || def.allOf != null) {
@@ -241,9 +247,6 @@ function emitTypeDecl(emit, def, generic) {
   emit(`\n`);
 }
 
-
-const emittedTypes = new Set();
-
 function emitTypeModule(typeName, def) {
   if (emittedTypes.has(def)) {
     return;
@@ -254,7 +257,7 @@ function emitTypeModule(typeName, def) {
   withBuffer(emit, (emit) => {
     const modName = toOcamlName(typeName, true);
     emitModule(emit, modName, (emit) => {
-      emitTypeDecl(emit, def, ['Event', 'Request', 'Response'].includes(modName));
+      emitTypeDecl(emit, def, {generic: ['Event', 'Request', 'Response'].includes(modName), isEmitTypeModule: true});
     });
     emit('\n');
   });

@@ -1155,45 +1155,7 @@ module Initialize_command : sig
 
   module Result : sig
     (** Information about the capabilities of a debug adapter. *)
-    type t = {
-      supports_configuration_done_request : bool option [@key "supportsConfigurationDoneRequest"] [@default None]; (** The debug adapter supports the 'configurationDone' request. *)
-      supports_function_breakpoints : bool option [@key "supportsFunctionBreakpoints"] [@default None]; (** The debug adapter supports function breakpoints. *)
-      supports_conditional_breakpoints : bool option [@key "supportsConditionalBreakpoints"] [@default None]; (** The debug adapter supports conditional breakpoints. *)
-      supports_hit_conditional_breakpoints : bool option [@key "supportsHitConditionalBreakpoints"] [@default None]; (** The debug adapter supports breakpoints that break execution after a specified number of hits. *)
-      supports_evaluate_for_hovers : bool option [@key "supportsEvaluateForHovers"] [@default None]; (** The debug adapter supports a (side effect free) evaluate request for data hovers. *)
-      exception_breakpoint_filters : Exception_breakpoints_filter.t option [@key "exceptionBreakpointFilters"] [@default None]; (** Available exception filter options for the 'setExceptionBreakpoints' request. *)
-      supports_step_back : bool option [@key "supportsStepBack"] [@default None]; (** The debug adapter supports stepping back via the 'stepBack' and 'reverseContinue' requests. *)
-      supports_set_variable : bool option [@key "supportsSetVariable"] [@default None]; (** The debug adapter supports setting a variable to a value. *)
-      supports_restart_frame : bool option [@key "supportsRestartFrame"] [@default None]; (** The debug adapter supports restarting a frame. *)
-      supports_goto_targets_request : bool option [@key "supportsGotoTargetsRequest"] [@default None]; (** The debug adapter supports the 'gotoTargets' request. *)
-      supports_step_in_targets_request : bool option [@key "supportsStepInTargetsRequest"] [@default None]; (** The debug adapter supports the 'stepInTargets' request. *)
-      supports_completions_request : bool option [@key "supportsCompletionsRequest"] [@default None]; (** The debug adapter supports the 'completions' request. *)
-      completion_trigger_characters : string option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the '.' character. *)
-      supports_modules_request : bool option [@key "supportsModulesRequest"] [@default None]; (** The debug adapter supports the 'modules' request. *)
-      additional_module_columns : Column_descriptor.t option [@key "additionalModuleColumns"] [@default None]; (** The set of additional module information exposed by the debug adapter. *)
-      supported_checksum_algorithms : Checksum_algorithm.t option [@key "supportedChecksumAlgorithms"] [@default None]; (** Checksum algorithms supported by the debug adapter. *)
-      supports_restart_request : bool option [@key "supportsRestartRequest"] [@default None]; (** The debug adapter supports the 'restart' request. In this case a client should not implement 'restart' by terminating and relaunching the adapter but by calling the RestartRequest. *)
-      supports_exception_options : bool option [@key "supportsExceptionOptions"] [@default None]; (** The debug adapter supports 'exceptionOptions' on the setExceptionBreakpoints request. *)
-      supports_value_formatting_options : bool option [@key "supportsValueFormattingOptions"] [@default None]; (** The debug adapter supports a 'format' attribute on the stackTraceRequest, variablesRequest, and evaluateRequest. *)
-      supports_exception_info_request : bool option [@key "supportsExceptionInfoRequest"] [@default None]; (** The debug adapter supports the 'exceptionInfo' request. *)
-      support_terminate_debuggee : bool option [@key "supportTerminateDebuggee"] [@default None]; (** The debug adapter supports the 'terminateDebuggee' attribute on the 'disconnect' request. *)
-      supports_delayed_stack_trace_loading : bool option [@key "supportsDelayedStackTraceLoading"] [@default None]; (** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and the 'totalFrames' result of the 'StackTrace' request are supported. *)
-      supports_loaded_sources_request : bool option [@key "supportsLoadedSourcesRequest"] [@default None]; (** The debug adapter supports the 'loadedSources' request. *)
-      supports_log_points : bool option [@key "supportsLogPoints"] [@default None]; (** The debug adapter supports logpoints by interpreting the 'logMessage' attribute of the SourceBreakpoint. *)
-      supports_terminate_threads_request : bool option [@key "supportsTerminateThreadsRequest"] [@default None]; (** The debug adapter supports the 'terminateThreads' request. *)
-      supports_set_expression : bool option [@key "supportsSetExpression"] [@default None]; (** The debug adapter supports the 'setExpression' request. *)
-      supports_terminate_request : bool option [@key "supportsTerminateRequest"] [@default None]; (** The debug adapter supports the 'terminate' request. *)
-      supports_data_breakpoints : bool option [@key "supportsDataBreakpoints"] [@default None]; (** The debug adapter supports data breakpoints. *)
-      supports_read_memory_request : bool option [@key "supportsReadMemoryRequest"] [@default None]; (** The debug adapter supports the 'readMemory' request. *)
-      supports_disassemble_request : bool option [@key "supportsDisassembleRequest"] [@default None]; (** The debug adapter supports the 'disassemble' request. *)
-      supports_cancel_request : bool option [@key "supportsCancelRequest"] [@default None]; (** The debug adapter supports the 'cancel' request. *)
-      supports_breakpoint_locations_request : bool option [@key "supportsBreakpointLocationsRequest"] [@default None]; (** The debug adapter supports the 'breakpointLocations' request. *)
-      supports_clipboard_context : bool option [@key "supportsClipboardContext"] [@default None]; (** The debug adapter supports the 'clipboard' context value in the 'evaluate' request. *)
-      supports_stepping_granularity : bool option [@key "supportsSteppingGranularity"] [@default None]; (** The debug adapter supports stepping granularities (argument 'granularity') for the stepping requests. *)
-      supports_instruction_breakpoints : bool option [@key "supportsInstructionBreakpoints"] [@default None]; (** The debug adapter supports adding breakpoints based on instruction references. *)
-      supports_exception_filter_options : bool option [@key "supportsExceptionFilterOptions"] [@default None]; (** The debug adapter supports 'filterOptions' as an argument on the 'setExceptionBreakpoints' request. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+    type t = Capabilities.t[@@deriving yojson]
   end
 end
 

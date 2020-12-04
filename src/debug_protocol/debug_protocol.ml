@@ -21,9 +21,9 @@ module Protocol_message = struct
       | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Request -> `String "request" 
-      | Response -> `String "response" 
-      | Event -> `String "event" 
+      | Request -> `String "request"
+      | Response -> `String "response"
+      | Event -> `String "event"
       | Custom str -> `String str
   end
 
@@ -45,7 +45,7 @@ module Request = struct
       | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Request -> `String "request" 
+      | Request -> `String "request"
 
   end
 
@@ -68,7 +68,7 @@ module Event = struct
       | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Event -> `String "event" 
+      | Event -> `String "event"
 
   end
 
@@ -91,7 +91,7 @@ module Response = struct
       | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Response -> `String "response" 
+      | Response -> `String "response"
 
   end
 
@@ -108,7 +108,7 @@ module Response = struct
       | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Cancelled -> `String "cancelled" 
+      | Cancelled -> `String "cancelled"
       | Custom str -> `String str
   end
 
@@ -191,10 +191,10 @@ module Column_descriptor = struct
       | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | String -> `String "string" 
-      | Number -> `String "number" 
-      | Boolean -> `String "boolean" 
-      | Unix_timestamp_utc -> `String "unixTimestampUTC" 
+      | String -> `String "string"
+      | Number -> `String "number"
+      | Boolean -> `String "boolean"
+      | Unix_timestamp_utc -> `String "unixTimestampUTC"
 
   end
 
@@ -227,10 +227,10 @@ module Checksum_algorithm = struct
     | _ -> Error (print_exn_at_loc [%here])
 
   let to_yojson = function
-    | MD5 -> `String "MD5" 
-    | SHA1 -> `String "SHA1" 
-    | SHA256 -> `String "SHA256" 
-    | Timestamp -> `String "timestamp" 
+    | MD5 -> `String "MD5"
+    | SHA1 -> `String "SHA1"
+    | SHA256 -> `String "SHA256"
+    | Timestamp -> `String "timestamp"
 
 end
 
@@ -347,9 +347,9 @@ module Source = struct
       | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Normal -> `String "normal" 
-      | Emphasize -> `String "emphasize" 
-      | Deemphasize -> `String "deemphasize" 
+      | Normal -> `String "normal"
+      | Emphasize -> `String "emphasize"
+      | Deemphasize -> `String "deemphasize"
 
   end
 
@@ -390,9 +390,9 @@ module Stack_frame = struct
       | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Normal -> `String "normal" 
-      | Label -> `String "label" 
-      | Subtle -> `String "subtle" 
+      | Normal -> `String "normal"
+      | Label -> `String "label"
+      | Subtle -> `String "subtle"
 
   end
 
@@ -430,9 +430,9 @@ module Scope = struct
       | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Arguments -> `String "arguments" 
-      | Locals -> `String "locals" 
-      | Registers -> `String "registers" 
+      | Arguments -> `String "arguments"
+      | Locals -> `String "locals"
+      | Registers -> `String "registers"
       | Custom str -> `String str
   end
 
@@ -487,17 +487,17 @@ module Variable_presentation_hint = struct
       | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Property -> `String "property" 
-      | Method -> `String "method" 
-      | Class -> `String "class" 
-      | Data -> `String "data" 
-      | Event -> `String "event" 
-      | Base_class -> `String "baseClass" 
-      | Inner_class -> `String "innerClass" 
-      | Interface -> `String "interface" 
-      | Most_derived_class -> `String "mostDerivedClass" 
-      | Virtual -> `String "virtual" 
-      | Data_breakpoint -> `String "dataBreakpoint" 
+      | Property -> `String "property"
+      | Method -> `String "method"
+      | Class -> `String "class"
+      | Data -> `String "data"
+      | Event -> `String "event"
+      | Base_class -> `String "baseClass"
+      | Inner_class -> `String "innerClass"
+      | Interface -> `String "interface"
+      | Most_derived_class -> `String "mostDerivedClass"
+      | Virtual -> `String "virtual"
+      | Data_breakpoint -> `String "dataBreakpoint"
       | Custom str -> `String str
   end
 
@@ -523,13 +523,13 @@ module Variable_presentation_hint = struct
       | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Static -> `String "static" 
-      | Constant -> `String "constant" 
-      | Read_only -> `String "readOnly" 
-      | Raw_string -> `String "rawString" 
-      | Has_object_id -> `String "hasObjectId" 
-      | Can_have_object_id -> `String "canHaveObjectId" 
-      | Has_side_effects -> `String "hasSideEffects" 
+      | Static -> `String "static"
+      | Constant -> `String "constant"
+      | Read_only -> `String "readOnly"
+      | Raw_string -> `String "rawString"
+      | Has_object_id -> `String "hasObjectId"
+      | Can_have_object_id -> `String "canHaveObjectId"
+      | Has_side_effects -> `String "hasSideEffects"
       | Custom str -> `String str
   end
 
@@ -552,11 +552,11 @@ module Variable_presentation_hint = struct
       | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
     let to_yojson = function
-      | Public -> `String "public" 
-      | Private -> `String "private" 
-      | Protected -> `String "protected" 
-      | Internal -> `String "internal" 
-      | Final -> `String "final" 
+      | Public -> `String "public"
+      | Private -> `String "private"
+      | Protected -> `String "protected"
+      | Internal -> `String "internal"
+      | Final -> `String "final"
       | Custom str -> `String str
   end
 
@@ -649,9 +649,9 @@ module Data_breakpoint_access_type = struct
     | _ -> Error (print_exn_at_loc [%here])
 
   let to_yojson = function
-    | Read -> `String "read" 
-    | Write -> `String "write" 
-    | Read_write -> `String "readWrite" 
+    | Read -> `String "read"
+    | Write -> `String "write"
+    | Read_write -> `String "readWrite"
 
 end
 
@@ -717,9 +717,9 @@ module Stepping_granularity = struct
     | _ -> Error (print_exn_at_loc [%here])
 
   let to_yojson = function
-    | Statement -> `String "statement" 
-    | Line -> `String "line" 
-    | Instruction -> `String "instruction" 
+    | Statement -> `String "statement"
+    | Line -> `String "line"
+    | Instruction -> `String "instruction"
 
 end
 
@@ -793,25 +793,25 @@ module Completion_item_type = struct
     | _ -> Error (print_exn_at_loc [%here])
 
   let to_yojson = function
-    | Method -> `String "method" 
-    | Function -> `String "function" 
-    | Constructor -> `String "constructor" 
-    | Field -> `String "field" 
-    | Variable -> `String "variable" 
-    | Class -> `String "class" 
-    | Interface -> `String "interface" 
-    | Module -> `String "module" 
-    | Property -> `String "property" 
-    | Unit -> `String "unit" 
-    | Value -> `String "value" 
-    | Enum -> `String "enum" 
-    | Keyword -> `String "keyword" 
-    | Snippet -> `String "snippet" 
-    | Text -> `String "text" 
-    | Color -> `String "color" 
-    | File -> `String "file" 
-    | Reference -> `String "reference" 
-    | Customcolor -> `String "customcolor" 
+    | Method -> `String "method"
+    | Function -> `String "function"
+    | Constructor -> `String "constructor"
+    | Field -> `String "field"
+    | Variable -> `String "variable"
+    | Class -> `String "class"
+    | Interface -> `String "interface"
+    | Module -> `String "module"
+    | Property -> `String "property"
+    | Unit -> `String "unit"
+    | Value -> `String "value"
+    | Enum -> `String "enum"
+    | Keyword -> `String "keyword"
+    | Snippet -> `String "snippet"
+    | Text -> `String "text"
+    | Color -> `String "color"
+    | File -> `String "file"
+    | Reference -> `String "reference"
+    | Customcolor -> `String "customcolor"
 
 end
 
@@ -899,10 +899,10 @@ module Exception_break_mode = struct
     | _ -> Error (print_exn_at_loc [%here])
 
   let to_yojson = function
-    | Never -> `String "never" 
-    | Always -> `String "always" 
-    | Unhandled -> `String "unhandled" 
-    | User_unhandled -> `String "userUnhandled" 
+    | Never -> `String "never"
+    | Always -> `String "always"
+    | Unhandled -> `String "unhandled"
+    | User_unhandled -> `String "userUnhandled"
 
 end
 
@@ -964,10 +964,10 @@ module Invalidated_areas = struct
     | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
   let to_yojson = function
-    | All -> `String "all" 
-    | Stacks -> `String "stacks" 
-    | Threads -> `String "threads" 
-    | Variables -> `String "variables" 
+    | All -> `String "all"
+    | Stacks -> `String "stacks"
+    | Threads -> `String "threads"
+    | Variables -> `String "variables"
     | Custom str -> `String str
 end
 
@@ -1012,15 +1012,15 @@ module Stopped_event = struct
         | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Step -> `String "step" 
-        | Breakpoint -> `String "breakpoint" 
-        | Exception -> `String "exception" 
-        | Pause -> `String "pause" 
-        | Entry -> `String "entry" 
-        | Goto -> `String "goto" 
-        | Function_breakpoint -> `String "function breakpoint" 
-        | Data_breakpoint -> `String "data breakpoint" 
-        | Instruction_breakpoint -> `String "instruction breakpoint" 
+        | Step -> `String "step"
+        | Breakpoint -> `String "breakpoint"
+        | Exception -> `String "exception"
+        | Pause -> `String "pause"
+        | Entry -> `String "entry"
+        | Goto -> `String "goto"
+        | Function_breakpoint -> `String "function breakpoint"
+        | Data_breakpoint -> `String "data breakpoint"
+        | Instruction_breakpoint -> `String "instruction breakpoint"
         | Custom str -> `String str
     end
 
@@ -1091,8 +1091,8 @@ module Thread_event = struct
         | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Started -> `String "started" 
-        | Exited -> `String "exited" 
+        | Started -> `String "started"
+        | Exited -> `String "exited"
         | Custom str -> `String str
     end
 
@@ -1125,10 +1125,10 @@ module Output_event = struct
         | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Console -> `String "console" 
-        | Stdout -> `String "stdout" 
-        | Stderr -> `String "stderr" 
-        | Telemetry -> `String "telemetry" 
+        | Console -> `String "console"
+        | Stdout -> `String "stdout"
+        | Stderr -> `String "stderr"
+        | Telemetry -> `String "telemetry"
         | Custom str -> `String str
     end
 
@@ -1146,9 +1146,9 @@ module Output_event = struct
         | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Start -> `String "start" 
-        | Start_collapsed -> `String "startCollapsed" 
-        | End -> `String "end" 
+        | Start -> `String "start"
+        | Start_collapsed -> `String "startCollapsed"
+        | End -> `String "end"
 
     end
 
@@ -1185,9 +1185,9 @@ module Breakpoint_event = struct
         | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Changed -> `String "changed" 
-        | New -> `String "new" 
-        | Removed -> `String "removed" 
+        | Changed -> `String "changed"
+        | New -> `String "new"
+        | Removed -> `String "removed"
         | Custom str -> `String str
     end
 
@@ -1217,9 +1217,9 @@ module Module_event = struct
         | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | New -> `String "new" 
-        | Changed -> `String "changed" 
-        | Removed -> `String "removed" 
+        | New -> `String "new"
+        | Changed -> `String "changed"
+        | Removed -> `String "removed"
 
     end
 
@@ -1249,9 +1249,9 @@ module Loaded_source_event = struct
         | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | New -> `String "new" 
-        | Changed -> `String "changed" 
-        | Removed -> `String "removed" 
+        | New -> `String "new"
+        | Changed -> `String "changed"
+        | Removed -> `String "removed"
 
     end
 
@@ -1281,9 +1281,9 @@ module Process_event = struct
         | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Launch -> `String "launch" 
-        | Attach -> `String "attach" 
-        | Attach_for_suspended_launch -> `String "attachForSuspendedLaunch" 
+        | Launch -> `String "launch"
+        | Attach -> `String "attach"
+        | Attach_for_suspended_launch -> `String "attachForSuspendedLaunch"
 
     end
 
@@ -1418,8 +1418,8 @@ module Run_in_terminal_command = struct
         | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Integrated -> `String "integrated" 
-        | External -> `String "external" 
+        | Integrated -> `String "integrated"
+        | External -> `String "external"
 
     end
 
@@ -1471,8 +1471,8 @@ module Initialize_command = struct
         | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Path -> `String "path" 
-        | Uri -> `String "uri" 
+        | Path -> `String "path"
+        | Uri -> `String "uri"
         | Custom str -> `String str
     end
 
@@ -1497,45 +1497,8 @@ module Initialize_command = struct
 
   module Result = struct
     (** Information about the capabilities of a debug adapter. *)
-    type t = {
-      supports_configuration_done_request : bool option [@key "supportsConfigurationDoneRequest"] [@default None]; (** The debug adapter supports the 'configurationDone' request. *)
-      supports_function_breakpoints : bool option [@key "supportsFunctionBreakpoints"] [@default None]; (** The debug adapter supports function breakpoints. *)
-      supports_conditional_breakpoints : bool option [@key "supportsConditionalBreakpoints"] [@default None]; (** The debug adapter supports conditional breakpoints. *)
-      supports_hit_conditional_breakpoints : bool option [@key "supportsHitConditionalBreakpoints"] [@default None]; (** The debug adapter supports breakpoints that break execution after a specified number of hits. *)
-      supports_evaluate_for_hovers : bool option [@key "supportsEvaluateForHovers"] [@default None]; (** The debug adapter supports a (side effect free) evaluate request for data hovers. *)
-      exception_breakpoint_filters : Exception_breakpoints_filter.t option [@key "exceptionBreakpointFilters"] [@default None]; (** Available exception filter options for the 'setExceptionBreakpoints' request. *)
-      supports_step_back : bool option [@key "supportsStepBack"] [@default None]; (** The debug adapter supports stepping back via the 'stepBack' and 'reverseContinue' requests. *)
-      supports_set_variable : bool option [@key "supportsSetVariable"] [@default None]; (** The debug adapter supports setting a variable to a value. *)
-      supports_restart_frame : bool option [@key "supportsRestartFrame"] [@default None]; (** The debug adapter supports restarting a frame. *)
-      supports_goto_targets_request : bool option [@key "supportsGotoTargetsRequest"] [@default None]; (** The debug adapter supports the 'gotoTargets' request. *)
-      supports_step_in_targets_request : bool option [@key "supportsStepInTargetsRequest"] [@default None]; (** The debug adapter supports the 'stepInTargets' request. *)
-      supports_completions_request : bool option [@key "supportsCompletionsRequest"] [@default None]; (** The debug adapter supports the 'completions' request. *)
-      completion_trigger_characters : string option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the '.' character. *)
-      supports_modules_request : bool option [@key "supportsModulesRequest"] [@default None]; (** The debug adapter supports the 'modules' request. *)
-      additional_module_columns : Column_descriptor.t option [@key "additionalModuleColumns"] [@default None]; (** The set of additional module information exposed by the debug adapter. *)
-      supported_checksum_algorithms : Checksum_algorithm.t option [@key "supportedChecksumAlgorithms"] [@default None]; (** Checksum algorithms supported by the debug adapter. *)
-      supports_restart_request : bool option [@key "supportsRestartRequest"] [@default None]; (** The debug adapter supports the 'restart' request. In this case a client should not implement 'restart' by terminating and relaunching the adapter but by calling the RestartRequest. *)
-      supports_exception_options : bool option [@key "supportsExceptionOptions"] [@default None]; (** The debug adapter supports 'exceptionOptions' on the setExceptionBreakpoints request. *)
-      supports_value_formatting_options : bool option [@key "supportsValueFormattingOptions"] [@default None]; (** The debug adapter supports a 'format' attribute on the stackTraceRequest, variablesRequest, and evaluateRequest. *)
-      supports_exception_info_request : bool option [@key "supportsExceptionInfoRequest"] [@default None]; (** The debug adapter supports the 'exceptionInfo' request. *)
-      support_terminate_debuggee : bool option [@key "supportTerminateDebuggee"] [@default None]; (** The debug adapter supports the 'terminateDebuggee' attribute on the 'disconnect' request. *)
-      supports_delayed_stack_trace_loading : bool option [@key "supportsDelayedStackTraceLoading"] [@default None]; (** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and the 'totalFrames' result of the 'StackTrace' request are supported. *)
-      supports_loaded_sources_request : bool option [@key "supportsLoadedSourcesRequest"] [@default None]; (** The debug adapter supports the 'loadedSources' request. *)
-      supports_log_points : bool option [@key "supportsLogPoints"] [@default None]; (** The debug adapter supports logpoints by interpreting the 'logMessage' attribute of the SourceBreakpoint. *)
-      supports_terminate_threads_request : bool option [@key "supportsTerminateThreadsRequest"] [@default None]; (** The debug adapter supports the 'terminateThreads' request. *)
-      supports_set_expression : bool option [@key "supportsSetExpression"] [@default None]; (** The debug adapter supports the 'setExpression' request. *)
-      supports_terminate_request : bool option [@key "supportsTerminateRequest"] [@default None]; (** The debug adapter supports the 'terminate' request. *)
-      supports_data_breakpoints : bool option [@key "supportsDataBreakpoints"] [@default None]; (** The debug adapter supports data breakpoints. *)
-      supports_read_memory_request : bool option [@key "supportsReadMemoryRequest"] [@default None]; (** The debug adapter supports the 'readMemory' request. *)
-      supports_disassemble_request : bool option [@key "supportsDisassembleRequest"] [@default None]; (** The debug adapter supports the 'disassemble' request. *)
-      supports_cancel_request : bool option [@key "supportsCancelRequest"] [@default None]; (** The debug adapter supports the 'cancel' request. *)
-      supports_breakpoint_locations_request : bool option [@key "supportsBreakpointLocationsRequest"] [@default None]; (** The debug adapter supports the 'breakpointLocations' request. *)
-      supports_clipboard_context : bool option [@key "supportsClipboardContext"] [@default None]; (** The debug adapter supports the 'clipboard' context value in the 'evaluate' request. *)
-      supports_stepping_granularity : bool option [@key "supportsSteppingGranularity"] [@default None]; (** The debug adapter supports stepping granularities (argument 'granularity') for the stepping requests. *)
-      supports_instruction_breakpoints : bool option [@key "supportsInstructionBreakpoints"] [@default None]; (** The debug adapter supports adding breakpoints based on instruction references. *)
-      supports_exception_filter_options : bool option [@key "supportsExceptionFilterOptions"] [@default None]; (** The debug adapter supports 'filterOptions' as an argument on the 'setExceptionBreakpoints' request. *)
-    }
-    [@@deriving make, yojson {strict = false}]
+    type t = Capabilities.t
+    [@@deriving yojson]
   end
 end
 
@@ -2084,8 +2047,8 @@ module Variables_command = struct
         | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Indexed -> `String "indexed" 
-        | Named -> `String "named" 
+        | Indexed -> `String "indexed"
+        | Named -> `String "named"
 
     end
 
@@ -2265,10 +2228,10 @@ module Evaluate_command = struct
         | `String str -> Ok (Custom str)  | _ -> Error (print_exn_at_loc [%here])
 
       let to_yojson = function
-        | Watch -> `String "watch" 
-        | Repl -> `String "repl" 
-        | Hover -> `String "hover" 
-        | Clipboard -> `String "clipboard" 
+        | Watch -> `String "watch"
+        | Repl -> `String "repl"
+        | Hover -> `String "hover"
+        | Clipboard -> `String "clipboard"
         | Custom str -> `String str
     end
 

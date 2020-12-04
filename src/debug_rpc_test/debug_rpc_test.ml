@@ -73,11 +73,11 @@ let lwt_reporter () =
 
 let%expect_test "exec_command" =
   let client_rpc, server_rpc = create_rpc_pair () in
-  let handle_foo_command _rpc (arg : Foo_command.Arguments.t) _raw_msg =
+  let handle_foo_command (arg : Foo_command.Arguments.t) =
     Format.printf "foo: %s\n" arg.foo;
     Lwt.return Foo_command.Result.{bar = "2000"}
   in
-  Debug_rpc.register_command server_rpc (module Foo_command) handle_foo_command;
+  Debug_rpc.set_command_handler server_rpc (module Foo_command) handle_foo_command;
   Lwt.async (fun () -> (
     Debug_rpc.start server_rpc
   ));
@@ -92,7 +92,7 @@ let%expect_test "exec_command" =
 
 let%expect_test "cancellation" =
   let client_rpc, server_rpc = create_rpc_pair () in
-  let handle_null_command _rpc (_arg : Null_command.Arguments.t) _raw_msg =
+  let handle_null_command (_arg : Null_command.Arguments.t) =
     Format.printf "1\n";
     Lwt.catch (fun () -> (
       let%lwt () = Lwt_unix.sleep 1.0 in
@@ -106,7 +106,7 @@ let%expect_test "cancellation" =
       Lwt.return ()
     ));
   in
-  Debug_rpc.register_command server_rpc (module Null_command) handle_null_command;
+  Debug_rpc.set_command_handler server_rpc (module Null_command) handle_null_command;
   Lwt.async (fun () -> (
     Debug_rpc.start server_rpc
   ));

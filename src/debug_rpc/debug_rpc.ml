@@ -84,12 +84,12 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Arguments.t 
     let res_body = The_command.Result.of_yojson res.body |> Result.get_ok in
     Lwt.return res_body
 
-let register_command : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> (t -> arg -> string -> res Lwt.t) -> unit =
+let set_command_handler : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> (arg -> res Lwt.t) -> unit =
   fun rpc (module The_command) f ->
-    let handler rpc (req : Request.t) raw_msg =
+    let handler rpc (req : Request.t) _raw_msg =
       let%lwt res =
         try%lwt
-          let%lwt res = f rpc (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) raw_msg in
+          let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) in
           Lwt.return (Response.make
             ~seq:(next_seq rpc)
             ~type_:Response.Type.Response
@@ -118,7 +118,10 @@ let register_command : type arg res. t -> (module COMMAND with type Arguments.t 
     in
     Hashtbl.replace rpc.handlers The_command.type_ handler
 
-let handle_cancel rpc (arg : Cancel_command.Arguments.t) _raw_msg =
+let remove_command_handler rpc (module The_command : COMMAND) =
+  Hashtbl.remove rpc.handlers The_command.type_
+
+let handle_cancel rpc (arg : Cancel_command.Arguments.t) =
   match arg.request_id with
   | Some req_seq -> (
     let cancel_signal = Hashtbl.find rpc.cancel_signals req_seq in
@@ -137,7 +140,7 @@ let create ~in_ ~out ?(next_seq=0) () =
     cancel_signals = Hashtbl.create 0;
     event = React.E.create ()
   } in
-  register_command rpc (module Cancel_command) handle_cancel;
+  set_command_handler rpc (module Cancel_command) (handle_cancel rpc);
   rpc
 
 let start rpc =
@@ -200,7 +203,7 @@ let start rpc =
       | {type_ = Protocol_message.Type.Response; _} ->
         dispatch_response (Response.of_yojson msg_json |> Result.get_ok) raw_msg
       | _ -> failwith "Unsupported message type"
-    with err -> Log.err (
+    with err -> Log.warn (
       fun m -> m "Dispatch failed: %s\n%s" (Printexc.to_string err) (Printexc.get_backtrace ())
     )
   in
