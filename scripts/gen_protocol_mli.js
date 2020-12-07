@@ -130,6 +130,12 @@ function genType(def, prop, parentDef) {
     }
   }
 
+
+  if (def.type == 'object' && def.additionalProperties != null) {
+    debugger;
+    return `String_opt_dict.t`;
+  }
+
   if (_.isEqual(_.sortBy(def.type), ['integer', 'string'])) {
     return 'Int_or_string.t';
   }
@@ -170,6 +176,15 @@ function emitTypeDecl(emit, def, {generic, isEmitTypeModule} = {}) {
   if (!isEmitTypeModule && Object.entries(types).some(it => it[1] === def)) {
     const typeName = Object.entries(types).find(it => it[1] === def)[0];
     emit(` ${toOcamlName(typeName)}.t`);
+    emit(`[@@deriving yojson]`);
+  } else if (def != null && def.type === 'object' && def.additionalProperties != null) {
+    if (_.isEqual(_.sortBy(def.additionalProperties.type), ['null', 'string'])) {
+      emit(` String_opt_dict.t\n`);
+    } else if (def.additionalProperties.type === 'string') {
+      emit(` String_dict.t\n`);
+    } else {
+      throw new Error('Assertion failed');
+    }
     emit(`[@@deriving yojson]`);
   } else if (def == null || (def.type === 'object' && _.isEmpty(def.properties))) {
     emit(` Empty_dict.t\n`);

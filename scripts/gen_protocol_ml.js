@@ -172,6 +172,15 @@ function emitTypeDecl(emit, def, {generic, isEmitTypeModule} = {}) {
     const typeName = Object.entries(types).find(it => it[1] === def)[0];
     emit(` ${toOcamlName(typeName)}.t\n`);
     emit(`[@@deriving yojson]`);
+  } else if (def != null && def.type === 'object' && def.additionalProperties != null) {
+    if (_.isEqual(_.sortBy(def.additionalProperties.type), ['null', 'string'])) {
+      emit(` String_opt_dict.t\n`);
+    } else if (def.additionalProperties.type === 'string') {
+      emit(` String_dict.t\n`);
+    } else {
+      throw new Error('Assertion failed');
+    }
+    emit(`[@@deriving yojson]`);
   } else if (def == null || (def.type === 'object' && _.isEmpty(def.properties))) {
     emit(` Empty_dict.t\n`);
     emit(`[@@deriving yojson]`);

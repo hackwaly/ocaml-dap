@@ -95,7 +95,7 @@ end
 module Message : sig
   module Variables : sig
     (** An object used as a dictionary for looking up the variables in the format string. *)
-    type t = Empty_dict.t
+    type t = String_dict.t
     [@@deriving yojson]
   end
 
@@ -1091,7 +1091,7 @@ module Run_in_terminal_command : sig
 
     module Env : sig
       (** Environment key-value pairs that are added to or removed from the default environment. *)
-      type t = Empty_dict.t
+      type t = String_opt_dict.t
       [@@deriving yojson]
     end
 
