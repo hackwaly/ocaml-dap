@@ -151,10 +151,12 @@ function genType(def, prop, parentDef) {
     case 'boolean': return 'bool';
     case 'integer': return 'int';
     case 'number': return 'float';
-    default: {
+    case 'array': {
       const itemType = resolveDef(def.items);
-      return genType(itemType, prop);
+      return `${genType(itemType, prop)} list`;
     }
+    default:
+      throw new Error('Assertion failed');
   }
 }
 

@@ -182,17 +182,17 @@ module Capabilities : sig
     supports_conditional_breakpoints : bool option [@key "supportsConditionalBreakpoints"] [@default None]; (** The debug adapter supports conditional breakpoints. *)
     supports_hit_conditional_breakpoints : bool option [@key "supportsHitConditionalBreakpoints"] [@default None]; (** The debug adapter supports breakpoints that break execution after a specified number of hits. *)
     supports_evaluate_for_hovers : bool option [@key "supportsEvaluateForHovers"] [@default None]; (** The debug adapter supports a (side effect free) evaluate request for data hovers. *)
-    exception_breakpoint_filters : Exception_breakpoints_filter.t option [@key "exceptionBreakpointFilters"] [@default None]; (** Available exception filter options for the 'setExceptionBreakpoints' request. *)
+    exception_breakpoint_filters : Exception_breakpoints_filter.t list option [@key "exceptionBreakpointFilters"] [@default None]; (** Available exception filter options for the 'setExceptionBreakpoints' request. *)
     supports_step_back : bool option [@key "supportsStepBack"] [@default None]; (** The debug adapter supports stepping back via the 'stepBack' and 'reverseContinue' requests. *)
     supports_set_variable : bool option [@key "supportsSetVariable"] [@default None]; (** The debug adapter supports setting a variable to a value. *)
     supports_restart_frame : bool option [@key "supportsRestartFrame"] [@default None]; (** The debug adapter supports restarting a frame. *)
     supports_goto_targets_request : bool option [@key "supportsGotoTargetsRequest"] [@default None]; (** The debug adapter supports the 'gotoTargets' request. *)
     supports_step_in_targets_request : bool option [@key "supportsStepInTargetsRequest"] [@default None]; (** The debug adapter supports the 'stepInTargets' request. *)
     supports_completions_request : bool option [@key "supportsCompletionsRequest"] [@default None]; (** The debug adapter supports the 'completions' request. *)
-    completion_trigger_characters : string option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the '.' character. *)
+    completion_trigger_characters : string list option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the '.' character. *)
     supports_modules_request : bool option [@key "supportsModulesRequest"] [@default None]; (** The debug adapter supports the 'modules' request. *)
-    additional_module_columns : Column_descriptor.t option [@key "additionalModuleColumns"] [@default None]; (** The set of additional module information exposed by the debug adapter. *)
-    supported_checksum_algorithms : Checksum_algorithm.t option [@key "supportedChecksumAlgorithms"] [@default None]; (** Checksum algorithms supported by the debug adapter. *)
+    additional_module_columns : Column_descriptor.t list option [@key "additionalModuleColumns"] [@default None]; (** The set of additional module information exposed by the debug adapter. *)
+    supported_checksum_algorithms : Checksum_algorithm.t list option [@key "supportedChecksumAlgorithms"] [@default None]; (** Checksum algorithms supported by the debug adapter. *)
     supports_restart_request : bool option [@key "supportsRestartRequest"] [@default None]; (** The debug adapter supports the 'restart' request. In this case a client should not implement 'restart' by terminating and relaunching the adapter but by calling the RestartRequest. *)
     supports_exception_options : bool option [@key "supportsExceptionOptions"] [@default None]; (** The debug adapter supports 'exceptionOptions' on the setExceptionBreakpoints request. *)
     supports_value_formatting_options : bool option [@key "supportsValueFormattingOptions"] [@default None]; (** The debug adapter supports a 'format' attribute on the stackTraceRequest, variablesRequest, and evaluateRequest. *)
@@ -248,7 +248,7 @@ module Modules_view_descriptor : sig
   (** The ModulesViewDescriptor is the container for all declarative configuration options of a ModuleView.
   For now it only specifies the columns to be shown in the modules view. *)
   type t = {
-    columns : Column_descriptor.t;
+    columns : Column_descriptor.t list;
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -296,10 +296,10 @@ module Source : sig
     presentation_hint : Presentation_hint.t option [@key "presentationHint"] [@default None]; (** An optional hint for how to present the source in the UI.
     A value of 'deemphasize' can be used to indicate that the source is not available or that it is skipped on stepping. *)
     origin : string option [@default None]; (** The (optional) origin of this source: possible values 'internal module', 'inlined content from source map', etc. *)
-    sources : t option [@default None]; (** An optional list of sources that are related to this source. These may be the source that generated this source. *)
+    sources : t list option [@default None]; (** An optional list of sources that are related to this source. These may be the source that generated this source. *)
     adapter_data : Any.t option [@key "adapterData"] [@default None]; (** Optional data that a debug adapter might want to loop through the client.
     The client should leave the data intact and persist it across sessions. The client should not interpret the data. *)
-    checksums : Checksum.t option [@default None]; (** The checksums associated with this file. *)
+    checksums : Checksum.t list option [@default None]; (** The checksums associated with this file. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -415,7 +415,7 @@ module Variable_presentation_hint : sig
   (** Optional properties of a variable that can be used to determine how to render the variable in the UI. *)
   type t = {
     kind : Kind.t option [@default None]; (** The kind of variable. Before introducing additional values, try to use the listed values. *)
-    attributes : Attributes.t option [@default None]; (** Set of attributes represented as an array of strings. Before introducing additional values, try to use the listed values. *)
+    attributes : Attributes.t list option [@default None]; (** Set of attributes represented as an array of strings. Before introducing additional values, try to use the listed values. *)
     visibility : Visibility.t option [@default None]; (** Visibility of variable. Before introducing additional values, try to use the listed values. *)
   }
   [@@deriving make, yojson {strict = false}]
@@ -664,7 +664,7 @@ module Exception_path_segment : sig
   it matches anything except the names provided if 'negate' is true. *)
   type t = {
     negate : bool option [@default None]; (** If false or missing this segment matches the names provided, otherwise it matches anything except the names provided. *)
-    names : string; (** Depending on the value of 'negate' the names that should match or not match. *)
+    names : string list; (** Depending on the value of 'negate' the names that should match or not match. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -687,7 +687,7 @@ end
 module Exception_options : sig
   (** An ExceptionOptions assigns configuration options to a set of exceptions. *)
   type t = {
-    path : Exception_path_segment.t option [@default None]; (** A path that selects a single or multiple exceptions in a tree. If 'path' is missing, the whole tree is selected.
+    path : Exception_path_segment.t list option [@default None]; (** A path that selects a single or multiple exceptions in a tree. If 'path' is missing, the whole tree is selected.
     By convention the first segment of the path is a category that is used to group exceptions in the UI. *)
     break_mode : Exception_break_mode.t [@key "breakMode"]; (** Condition when a thrown exception should result in a break. *)
   }
@@ -702,7 +702,7 @@ module Exception_details : sig
     full_type_name : string option [@key "fullTypeName"] [@default None]; (** Fully-qualified type name of the exception object. *)
     evaluate_name : string option [@key "evaluateName"] [@default None]; (** Optional expression that can be evaluated in the current scope to obtain the exception object. *)
     stack_trace : string option [@key "stackTrace"] [@default None]; (** Stack trace at the time the exception was thrown. *)
-    inner_exception : t option [@key "innerException"] [@default None]; (** Details of the exception contained by this exception, if any. *)
+    inner_exception : t list option [@key "innerException"] [@default None]; (** Details of the exception contained by this exception, if any. *)
   }
   [@@deriving make, yojson {strict = false}]
 end
@@ -1034,7 +1034,7 @@ module Invalidated_event : sig
 
   module Payload : sig
     type t = {
-      areas : Invalidated_areas.t option [@default None]; (** Optional set of logical areas that got invalidated. This property has a hint characteristic: a client can only be expected to make a 'best effort' in honouring the areas but there are no guarantees. If this property is missing, empty, or if values are not understand the client should assume a single value 'all'. *)
+      areas : Invalidated_areas.t list option [@default None]; (** Optional set of logical areas that got invalidated. This property has a hint characteristic: a client can only be expected to make a 'best effort' in honouring the areas but there are no guarantees. If this property is missing, empty, or if values are not understand the client should assume a single value 'all'. *)
       thread_id : int option [@key "threadId"] [@default None]; (** If specified, the client only needs to refetch data related to this thread. *)
       stack_frame_id : int option [@key "stackFrameId"] [@default None]; (** If specified, the client only needs to refetch data related to this stack frame (and the 'threadId' is ignored). *)
     }
@@ -1100,7 +1100,7 @@ module Run_in_terminal_command : sig
       kind : Kind.t option [@default None]; (** What kind of terminal to launch. *)
       title : string option [@default None]; (** Optional title of the terminal. *)
       cwd : string; (** Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command. *)
-      args : string; (** List of arguments. The first argument is the command to run. *)
+      args : string list; (** List of arguments. The first argument is the command to run. *)
       env : Env.t option [@default None]; (** Environment key-value pairs that are added to or removed from the default environment. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1300,7 +1300,7 @@ module Breakpoint_locations_command : sig
 
   module Result : sig
     type t = {
-      breakpoints : Breakpoint_location.t; (** Sorted set of possible breakpoint locations. *)
+      breakpoints : Breakpoint_location.t list; (** Sorted set of possible breakpoint locations. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1316,8 +1316,8 @@ module Set_breakpoints_command : sig
     (** Arguments for 'setBreakpoints' request. *)
     type t = {
       source : Source.t; (** The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified. *)
-      breakpoints : Source_breakpoint.t option [@default None]; (** The code locations of the breakpoints. *)
-      lines : int option [@default None]; (** Deprecated: The code locations of the breakpoints. *)
+      breakpoints : Source_breakpoint.t list option [@default None]; (** The code locations of the breakpoints. *)
+      lines : int list option [@default None]; (** Deprecated: The code locations of the breakpoints. *)
       source_modified : bool option [@key "sourceModified"] [@default None]; (** A value of true indicates that the underlying source has been modified which results in new breakpoint locations. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1325,7 +1325,7 @@ module Set_breakpoints_command : sig
 
   module Result : sig
     type t = {
-      breakpoints : Breakpoint.t; (** Information about the breakpoints.
+      breakpoints : Breakpoint.t list; (** Information about the breakpoints.
       The array elements are in the same order as the elements of the 'breakpoints' (or the deprecated 'lines') array in the arguments. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1342,14 +1342,14 @@ module Set_function_breakpoints_command : sig
   module Arguments : sig
     (** Arguments for 'setFunctionBreakpoints' request. *)
     type t = {
-      breakpoints : Function_breakpoint.t; (** The function names of the breakpoints. *)
+      breakpoints : Function_breakpoint.t list; (** The function names of the breakpoints. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
 
   module Result : sig
     type t = {
-      breakpoints : Breakpoint.t; (** Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array. *)
+      breakpoints : Breakpoint.t list; (** Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1364,9 +1364,9 @@ module Set_exception_breakpoints_command : sig
   module Arguments : sig
     (** Arguments for 'setExceptionBreakpoints' request. *)
     type t = {
-      filters : string; (** Set of exception filters specified by their ID. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. The 'filter' and 'filterOptions' sets are additive. *)
-      filter_options : Exception_filter_options.t option [@key "filterOptions"] [@default None]; (** Set of exception filters and their options. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. This attribute is only honored by a debug adapter if the capability 'supportsExceptionFilterOptions' is true. The 'filter' and 'filterOptions' sets are additive. *)
-      exception_options : Exception_options.t option [@key "exceptionOptions"] [@default None]; (** Configuration options for selected exceptions.
+      filters : string list; (** Set of exception filters specified by their ID. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. The 'filter' and 'filterOptions' sets are additive. *)
+      filter_options : Exception_filter_options.t list option [@key "filterOptions"] [@default None]; (** Set of exception filters and their options. The set of all possible exception filters is defined by the 'exceptionBreakpointFilters' capability. This attribute is only honored by a debug adapter if the capability 'supportsExceptionFilterOptions' is true. The 'filter' and 'filterOptions' sets are additive. *)
+      exception_options : Exception_options.t list option [@key "exceptionOptions"] [@default None]; (** Configuration options for selected exceptions.
       The attribute is only honored by a debug adapter if the capability 'supportsExceptionOptions' is true. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1397,7 +1397,7 @@ module Data_breakpoint_info_command : sig
     type t = {
       data_id : string option [@key "dataId"]; (** An identifier for the data on which a data breakpoint can be registered with the setDataBreakpoints request or null if no data breakpoint is available. *)
       description : string; (** UI string that describes on what data the breakpoint is set on or why a data breakpoint is not available. *)
-      access_types : Data_breakpoint_access_type.t option [@key "accessTypes"] [@default None]; (** Optional attribute listing the available access types for a potential data breakpoint. A UI frontend could surface this information. *)
+      access_types : Data_breakpoint_access_type.t list option [@key "accessTypes"] [@default None]; (** Optional attribute listing the available access types for a potential data breakpoint. A UI frontend could surface this information. *)
       can_persist : bool option [@key "canPersist"] [@default None]; (** Optional attribute indicating that a potential data breakpoint could be persisted across sessions. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1414,14 +1414,14 @@ module Set_data_breakpoints_command : sig
   module Arguments : sig
     (** Arguments for 'setDataBreakpoints' request. *)
     type t = {
-      breakpoints : Data_breakpoint.t; (** The contents of this array replaces all existing data breakpoints. An empty array clears all data breakpoints. *)
+      breakpoints : Data_breakpoint.t list; (** The contents of this array replaces all existing data breakpoints. An empty array clears all data breakpoints. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
 
   module Result : sig
     type t = {
-      breakpoints : Breakpoint.t; (** Information about the data breakpoints. The array elements correspond to the elements of the input argument 'breakpoints' array. *)
+      breakpoints : Breakpoint.t list; (** Information about the data breakpoints. The array elements correspond to the elements of the input argument 'breakpoints' array. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1437,14 +1437,14 @@ module Set_instruction_breakpoints_command : sig
   module Arguments : sig
     (** Arguments for 'setInstructionBreakpoints' request *)
     type t = {
-      breakpoints : Instruction_breakpoint.t; (** The instruction references of the breakpoints *)
+      breakpoints : Instruction_breakpoint.t list; (** The instruction references of the breakpoints *)
     }
     [@@deriving make, yojson {strict = false}]
   end
 
   module Result : sig
     type t = {
-      breakpoints : Breakpoint.t; (** Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array. *)
+      breakpoints : Breakpoint.t list; (** Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1658,7 +1658,7 @@ module Stack_trace_command : sig
 
   module Result : sig
     type t = {
-      stack_frames : Stack_frame.t [@key "stackFrames"]; (** The frames of the stackframe. If the array has length zero, there are no stackframes available.
+      stack_frames : Stack_frame.t list [@key "stackFrames"]; (** The frames of the stackframe. If the array has length zero, there are no stackframes available.
       This means that there is no location information available. *)
       total_frames : int option [@key "totalFrames"] [@default None]; (** The total number of frames available in the stack. If omitted or if totalFrames is larger than the available frames, a client is expected to request frames until a request returns less frames than requested (which indicates the end of the stack). Returning monotonically increasing totalFrames values for subsequent requests can be used to enforce paging in the client. *)
     }
@@ -1680,7 +1680,7 @@ module Scopes_command : sig
 
   module Result : sig
     type t = {
-      scopes : Scope.t; (** The scopes of the stackframe. If the array has length zero, there are no scopes available. *)
+      scopes : Scope.t list; (** The scopes of the stackframe. If the array has length zero, there are no scopes available. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1715,7 +1715,7 @@ module Variables_command : sig
 
   module Result : sig
     type t = {
-      variables : Variable.t; (** All (or a range) of variables for the given variable reference. *)
+      variables : Variable.t list; (** All (or a range) of variables for the given variable reference. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1787,7 +1787,7 @@ module Threads_command : sig
 
   module Result : sig
     type t = {
-      threads : Thread.t; (** All threads. *)
+      threads : Thread.t list; (** All threads. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1801,7 +1801,7 @@ module Terminate_threads_command : sig
   module Arguments : sig
     (** Arguments for 'terminateThreads' request. *)
     type t = {
-      thread_ids : int option [@key "threadIds"] [@default None]; (** Ids of threads to be terminated. *)
+      thread_ids : int list option [@key "threadIds"] [@default None]; (** Ids of threads to be terminated. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1828,7 +1828,7 @@ module Modules_command : sig
 
   module Result : sig
     type t = {
-      modules : Module.t; (** All modules or range of modules. *)
+      modules : Module.t list; (** All modules or range of modules. *)
       total_modules : int option [@key "totalModules"] [@default None]; (** The total number of modules available. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1848,7 +1848,7 @@ module Loaded_sources_command : sig
 
   module Result : sig
     type t = {
-      sources : Source.t; (** Set of loaded sources. *)
+      sources : Source.t list; (** Set of loaded sources. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1958,7 +1958,7 @@ module Step_in_targets_command : sig
 
   module Result : sig
     type t = {
-      targets : Step_in_target.t; (** The possible stepIn targets of the specified source location. *)
+      targets : Step_in_target.t list; (** The possible stepIn targets of the specified source location. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1982,7 +1982,7 @@ module Goto_targets_command : sig
 
   module Result : sig
     type t = {
-      targets : Goto_target.t; (** The possible goto targets of the specified location. *)
+      targets : Goto_target.t list; (** The possible goto targets of the specified location. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -2006,7 +2006,7 @@ module Completions_command : sig
 
   module Result : sig
     type t = {
-      targets : Completion_item.t; (** The possible completions for . *)
+      targets : Completion_item.t list; (** The possible completions for . *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -2083,7 +2083,7 @@ module Disassemble_command : sig
 
   module Result : sig
     type t = {
-      instructions : Disassembled_instruction.t; (** The list of disassembled instructions. *)
+      instructions : Disassembled_instruction.t list; (** The list of disassembled instructions. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
