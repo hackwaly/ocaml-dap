@@ -104,7 +104,7 @@ let set_command_handler : type arg res. t -> (module COMMAND with type Arguments
             ~seq:(next_seq rpc)
             ~type_:Response.Type.Response
             ~request_seq:req.seq
-            ~success:true
+            ~success:false
             ~command:The_command.type_
             ~message:(Some (
               match exn with
