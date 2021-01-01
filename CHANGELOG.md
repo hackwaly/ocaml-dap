@@ -1,3 +1,9 @@
+## 1.0.3 (2021-01-02)
+
+### Fixed
+
+- Fix command failure will send response with `success=true`
+
 ## 1.0.2 (2020-12-07)
 
 ### Fixed
