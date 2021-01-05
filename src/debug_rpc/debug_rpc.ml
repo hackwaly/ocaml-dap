@@ -100,6 +100,7 @@ let set_command_handler : type arg res. t -> (module COMMAND with type Arguments
             ()
           )
         with exn ->
+          Log.warn (fun m -> m "Uncaught_exc %s %s" (Printexc.to_string exn) (Printexc.get_backtrace ()));%lwt
           Lwt.return (Response.make
             ~seq:(next_seq rpc)
             ~type_:Response.Type.Response
