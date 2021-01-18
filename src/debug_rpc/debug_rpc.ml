@@ -1,7 +1,7 @@
 open Debug_protocol
 
-let src = Logs.Src.create "dap.rpc.Debug_rpc"
-module Log = (val Logs_lwt.src_log src : Logs_lwt.LOG)
+let log_src = Logs.Src.create "dap.rpc_lwt"
+module Log = (val Logs_lwt.src_log log_src : Logs_lwt.LOG)
 
 type t = {
   in_ : Lwt_io.input_channel;

@@ -198,7 +198,7 @@ module Capabilities : sig
     supports_value_formatting_options : bool option [@key "supportsValueFormattingOptions"] [@default None]; (** The debug adapter supports a 'format' attribute on the stackTraceRequest, variablesRequest, and evaluateRequest. *)
     supports_exception_info_request : bool option [@key "supportsExceptionInfoRequest"] [@default None]; (** The debug adapter supports the 'exceptionInfo' request. *)
     support_terminate_debuggee : bool option [@key "supportTerminateDebuggee"] [@default None]; (** The debug adapter supports the 'terminateDebuggee' attribute on the 'disconnect' request. *)
-    supports_delayed_stack_trace_loading : bool option [@key "supportsDelayedStackTraceLoading"] [@default None]; (** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and the 'totalFrames' result of the 'StackTrace' request are supported. *)
+    supports_delayed_stack_trace_loading : bool option [@key "supportsDelayedStackTraceLoading"] [@default None]; (** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and an optional 'totalFrames' result of the 'StackTrace' request are supported. *)
     supports_loaded_sources_request : bool option [@key "supportsLoadedSourcesRequest"] [@default None]; (** The debug adapter supports the 'loadedSources' request. *)
     supports_log_points : bool option [@key "supportsLogPoints"] [@default None]; (** The debug adapter supports logpoints by interpreting the 'logMessage' attribute of the SourceBreakpoint. *)
     supports_terminate_threads_request : bool option [@key "supportsTerminateThreadsRequest"] [@default None]; (** The debug adapter supports the 'terminateThreads' request. *)
@@ -1388,7 +1388,7 @@ module Data_breakpoint_info_command : sig
     type t = {
       variables_reference : int option [@key "variablesReference"] [@default None]; (** Reference to the Variable container if the data breakpoint is requested for a child of the container. *)
       name : string; (** The name of the Variable's child to obtain data breakpoint information for.
-      If variableReference isn’t provided, this can be an expression. *)
+      If variablesReference isn’t provided, this can be an expression. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1640,7 +1640,7 @@ module Pause_command : sig
 end
 
 (** The request returns a stacktrace from the current execution state of a given thread.
-A client can request all stack frames by omitting the startFrame and levels arguments. For performance conscious clients stack frames can be retrieved in a piecemeal way with the startFrame and levels arguments. The response of the stackTrace request may contain a totalFrames property that hints at the total number of frames in the stack. If a client needs this total number upfront, it can issue a request for a single (first) frame and depending on the value of totalFrames decide how to proceed. In any case a client should be prepared to receive less frames than requested, which is an indication that the end of the stack has been reached. *)
+A client can request all stack frames by omitting the startFrame and levels arguments. For performance conscious clients and if the debug adapter's 'supportsDelayedStackTraceLoading' capability is true, stack frames can be retrieved in a piecemeal way with the startFrame and levels arguments. The response of the stackTrace request may contain a totalFrames property that hints at the total number of frames in the stack. If a client needs this total number upfront, it can issue a request for a single (first) frame and depending on the value of totalFrames decide how to proceed. In any case a client should be prepared to receive less frames than requested, which is an indication that the end of the stack has been reached. *)
 module Stack_trace_command : sig
   val type_ : string
 

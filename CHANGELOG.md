@@ -1,3 +1,9 @@
+## 1.0.4 (2021-01-02)
+
+### Added
+
+- Added Debug_rpc.log_src to allow to control log level externally
+
 ## 1.0.3 (2021-01-02)
 
 ### Fixed

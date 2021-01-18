@@ -1,5 +1,7 @@
 open Debug_protocol
 
+val log_src : Logs.Src.t
+
 type t
 (** The type of rpc connection *)
 
