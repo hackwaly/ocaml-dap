@@ -13,6 +13,12 @@ type t = {
   event : Event.t React.E.t * (?step:React.step -> Event.t-> unit);
 }
 
+type progress = <
+  start : unit -> unit Lwt.t;
+  update : int -> int -> unit Lwt.t;
+  finish : unit -> unit Lwt.t;
+>
+
 let next_seq rpc =
   let seq = rpc.next_seq in
   rpc.next_seq <- rpc.next_seq + 1;
@@ -84,12 +90,32 @@ let rec exec_command : type arg res. t -> (module COMMAND with type Arguments.t 
     let res_body = The_command.Result.of_yojson res.body |> Result.get_ok in
     Lwt.return res_body
 
-let set_command_handler : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> (arg -> res Lwt.t) -> unit =
+class c_progress rpc request_id title =
+  let progress_id = next_seq rpc |> string_of_int in
+  object
+    val rpc = rpc
+    val progress_id = progress_id
+    val request_id = request_id
+
+    method start () =
+      let progress_id = next_seq rpc |> string_of_int in
+      send_event rpc (module Progress_start_event) (Progress_start_event.Payload.make ~progress_id ~title ~request_id ())
+
+    method update current total =
+      let percent = (Float.of_int current) /. (Float.of_int total) in
+      send_event rpc (module Progress_update_event) (Progress_update_event.Payload.make ~progress_id ~percentage:(Some percent) ())
+
+    method finish () =
+      send_event rpc (module Progress_end_event) (Progress_end_event.Payload.make ~progress_id ())
+  end
+
+let set_progressive_command_handler : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> (arg -> progress -> res Lwt.t) -> unit =
   fun rpc (module The_command) f ->
     let handler rpc (req : Request.t) _raw_msg =
       let%lwt res =
         try%lwt
-          let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) in
+          let progress = new c_progress rpc (Some req.seq) The_command.type_ in
+          let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) progress in
           Lwt.return (Response.make
             ~seq:(next_seq rpc)
             ~type_:Response.Type.Response
@@ -118,6 +144,10 @@ let set_command_handler : type arg res. t -> (module COMMAND with type Arguments
       send_message rpc (res |> Response.to_yojson)
     in
     Hashtbl.replace rpc.handlers The_command.type_ handler
+
+let set_command_handler : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> (arg -> res Lwt.t) -> unit =
+  fun rpc (module The_command) f ->
+    set_progressive_command_handler rpc (module The_command) (fun arg _ -> f arg)
 
 let remove_command_handler rpc (module The_command : COMMAND) =
   Hashtbl.remove rpc.handlers The_command.type_

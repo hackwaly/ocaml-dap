@@ -1,3 +1,9 @@
+## unreleased
+
+### Added
+
+- Added Debug_rpc.set_progressive_command_handler
+
 ## 1.0.4 (2021-01-02)
 
 ### Added

@@ -5,6 +5,12 @@ val log_src : Logs.Src.t
 type t
 (** The type of rpc connection *)
 
+type progress = <
+  start : unit -> unit Lwt.t;
+  update : int -> int -> unit Lwt.t;
+  finish : unit -> unit Lwt.t;
+>
+
 val create : in_:Lwt_io.input_channel -> out:Lwt_io.output_channel -> ?next_seq:int -> unit -> t
 (** [create ~in_ ~out ?next_seq ()] Create a rpc connection *)
 
@@ -13,6 +19,9 @@ val event : t -> (module EVENT with type Payload.t = 'a) -> 'a React.E.t
 
 val send_event : t -> (module EVENT with type Payload.t = 'a) -> 'a -> unit Lwt.t
 (** [send_event rpc (module The_event) payload] Send event with [payload] to the opposite end *)
+
+val set_progressive_command_handler : t -> (module COMMAND with type Arguments.t = 'a and type Result.t = 'b) -> ('a -> progress -> 'b Lwt.t) -> unit
+(** [set_command_handler rpc (module The_command) f] Set handler [f] for [The_command] *)
 
 val set_command_handler : t -> (module COMMAND with type Arguments.t = 'a and type Result.t = 'b) -> ('a -> 'b Lwt.t) -> unit
 (** [set_command_handler rpc (module The_command) f] Set handler [f] for [The_command] *)
