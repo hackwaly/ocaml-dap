@@ -11,6 +11,7 @@ type t = {
   handlers : (string, t -> Request.t -> string -> unit Lwt.t) Hashtbl.t;
   cancel_signals : (int, unit Lwt.u) Hashtbl.t;
   event : Event.t React.E.t * (?step:React.step -> Event.t-> unit);
+  out_mutex : Lwt_mutex.t;
 }
 
 type progress = <
@@ -25,13 +26,15 @@ let next_seq rpc =
   seq
 
 let send_message rpc msg_json =
-  let raw_msg = Yojson.Safe.to_string msg_json in
-  let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
-  let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length raw_msg)) in
-  let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
-  let%lwt () = Lwt_io.write rpc.out raw_msg in
-  let%lwt () = Lwt_io.flush rpc.out in
-  Log.debug (fun m -> m "Message sent -- %s" raw_msg)
+  Lwt_mutex.with_lock rpc.out_mutex (fun () ->
+    let raw_msg = Yojson.Safe.to_string msg_json in
+    let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
+    let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length raw_msg)) in
+    let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
+    let%lwt () = Lwt_io.write rpc.out raw_msg in
+    let%lwt () = Lwt_io.flush rpc.out in
+    Log.debug (fun m -> m "Message sent -- %s" raw_msg)
+  )
 
 let wait_response rpc req_seq =
   let cleanup () =
@@ -113,36 +116,38 @@ class c_progress rpc request_id title =
 let set_progressive_command_handler : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> (arg -> progress -> res Lwt.t) -> unit =
   fun rpc (module The_command) f ->
     let handler rpc (req : Request.t) _raw_msg =
-      let%lwt res =
-        try%lwt
-          let progress = new c_progress rpc (Some req.seq) The_command.type_ in
-          let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) progress in
-          Lwt.return (Response.make
-            ~seq:(next_seq rpc)
-            ~type_:Response.Type.Response
-            ~request_seq:req.seq
-            ~success:true
-            ~command:The_command.type_
-            ~body:(The_command.Result.to_yojson res)
-            ()
-          )
-        with exn ->
-          Log.warn (fun m -> m "Uncaught_exc %s %s" (Printexc.to_string exn) (Printexc.get_backtrace ()));%lwt
-          Lwt.return (Response.make
-            ~seq:(next_seq rpc)
-            ~type_:Response.Type.Response
-            ~request_seq:req.seq
-            ~success:false
-            ~command:The_command.type_
-            ~message:(Some (
-              match exn with
-              | Lwt.Canceled -> Response.Message.Cancelled
-              | _ -> Response.Message.Custom (Printexc.to_string exn)
-            ))
-            ()
-          )
-      in
-      send_message rpc (res |> Response.to_yojson)
+      Lwt_mutex.with_lock rpc.out_mutex (fun () ->
+        let%lwt res =
+          try%lwt
+            let progress = new c_progress rpc (Some req.seq) The_command.type_ in
+            let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) progress in
+            Lwt.return (Response.make
+              ~seq:(next_seq rpc)
+              ~type_:Response.Type.Response
+              ~request_seq:req.seq
+              ~success:true
+              ~command:The_command.type_
+              ~body:(The_command.Result.to_yojson res)
+              ()
+            )
+          with exn ->
+            Log.warn (fun m -> m "Uncaught_exc %s %s" (Printexc.to_string exn) (Printexc.get_backtrace ()));%lwt
+            Lwt.return (Response.make
+              ~seq:(next_seq rpc)
+              ~type_:Response.Type.Response
+              ~request_seq:req.seq
+              ~success:false
+              ~command:The_command.type_
+              ~message:(Some (
+                match exn with
+                | Lwt.Canceled -> Response.Message.Cancelled
+                | _ -> Response.Message.Custom (Printexc.to_string exn)
+              ))
+              ()
+            )
+        in
+        send_message rpc (res |> Response.to_yojson)
+      )
     in
     Hashtbl.replace rpc.handlers The_command.type_ handler
 
@@ -170,7 +175,8 @@ let create ~in_ ~out ?(next_seq=0) () =
     wakeners = Hashtbl.create 0;
     handlers = Hashtbl.create 0;
     cancel_signals = Hashtbl.create 0;
-    event = React.E.create ()
+    event = React.E.create ();
+    out_mutex = Lwt_mutex.create ();
   } in
   set_command_handler rpc (module Cancel_command) (handle_cancel rpc);
   rpc
