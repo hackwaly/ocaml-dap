@@ -137,7 +137,7 @@ let%expect_test "cancellation" =
   [%expect {|
     3
     1
-    6
+    2
     5 |}]
 
 let%expect_test "send_event" =
@@ -156,19 +156,18 @@ let%expect_test "send_event" =
     let%lwt () = Debug_rpc.send_event client_rpc (module Int_event) 4 in
     Lwt.return ()
   ));
-  let int_e = Debug_rpc.event server_rpc (module Int_event) in
-  let%lwt i = Lwt_react.E.next int_e in
+  let int_e = Debug_rpc.event server_rpc (module Int_event) |> Lwt_react.E.to_stream in
+  let%lwt i = Lwt_stream.next int_e in
   Format.printf "%d\n" i;
-  let%lwt i = Lwt_react.E.next int_e in
+  let%lwt i = Lwt_stream.next int_e in
   Format.printf "%d\n" i;
-  let int_e = Lwt_react.E.drop_once int_e in
-  let%lwt i = Lwt_react.E.next int_e in
+  let%lwt i = Lwt_stream.next int_e in
   Format.printf "%d\n" i;
   let%lwt () = Lwt_unix.sleep 0.0 in
-  let%lwt i = Lwt_react.E.next int_e in
+  let%lwt i = Lwt_stream.next int_e in
   Format.printf "%d\n" i;
   [%expect {|
     1
-    1
     2
+    3
     4 |}]
