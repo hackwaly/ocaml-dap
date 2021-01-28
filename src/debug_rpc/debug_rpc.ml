@@ -30,6 +30,7 @@ let send_message rpc msg_json =
   let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length raw_msg)) in
   let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
   let%lwt () = Lwt_io.write rpc.out raw_msg in
+  let%lwt () = Lwt_io.flush rpc.out in
   Log.debug (fun m -> m "Message sent -- %s" raw_msg)
 
 let wait_response rpc req_seq =
