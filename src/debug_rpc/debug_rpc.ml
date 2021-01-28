@@ -58,17 +58,20 @@ let event : type e. t -> (module EVENT with type Payload.t = e) -> e React.E.t =
 
 let send_event : type e. t -> (module EVENT with type Payload.t = e) -> e -> unit Lwt.t =
   fun rpc (module The_event) body ->
-    Lwt_mutex.with_lock rpc.out_mutex (fun () ->
-      send_message rpc Event.(
-        make
-          ~seq:(next_seq rpc)
-          ~type_:Event.Type.Event
-          ~event:(The_event.type_)
-          ~body:(The_event.Payload.to_yojson body)
-          ()
-        |> to_yojson
+    Lwt.async (fun () ->
+      Lwt_mutex.with_lock rpc.out_mutex (fun () ->
+        send_message rpc Event.(
+          make
+            ~seq:(next_seq rpc)
+            ~type_:Event.Type.Event
+            ~event:(The_event.type_)
+            ~body:(The_event.Payload.to_yojson body)
+            ()
+          |> to_yojson
+        )
       )
-    )
+    );
+    Lwt.return ()
 
 let rec exec_command : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> arg -> res Lwt.t =
   fun rpc (module The_command) arg ->
