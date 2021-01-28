@@ -26,15 +26,13 @@ let next_seq rpc =
   seq
 
 let send_message rpc msg_json =
-  Lwt_mutex.with_lock rpc.out_mutex (fun () ->
-    let raw_msg = Yojson.Safe.to_string msg_json in
-    let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
-    let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length raw_msg)) in
-    let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
-    let%lwt () = Lwt_io.write rpc.out raw_msg in
-    let%lwt () = Lwt_io.flush rpc.out in
-    Log.debug (fun m -> m "Message sent -- %s" raw_msg)
-  )
+  let raw_msg = Yojson.Safe.to_string msg_json in
+  let%lwt () = Lwt_io.write rpc.out "Content-Length: " in
+  let%lwt () = Lwt_io.write rpc.out (string_of_int (String.length raw_msg)) in
+  let%lwt () = Lwt_io.write rpc.out "\r\n\r\n" in
+  let%lwt () = Lwt_io.write rpc.out raw_msg in
+  let%lwt () = Lwt_io.flush rpc.out in
+  Log.debug (fun m -> m "Message sent -- %s" raw_msg)
 
 let wait_response rpc req_seq =
   let cleanup () =
@@ -60,14 +58,16 @@ let event : type e. t -> (module EVENT with type Payload.t = e) -> e React.E.t =
 
 let send_event : type e. t -> (module EVENT with type Payload.t = e) -> e -> unit Lwt.t =
   fun rpc (module The_event) body ->
-    send_message rpc Event.(
-      make
-        ~seq:(next_seq rpc)
-        ~type_:Event.Type.Event
-        ~event:(The_event.type_)
-        ~body:(The_event.Payload.to_yojson body)
-        ()
-      |> to_yojson
+    Lwt_mutex.with_lock rpc.out_mutex (fun () ->
+      send_message rpc Event.(
+        make
+          ~seq:(next_seq rpc)
+          ~type_:Event.Type.Event
+          ~event:(The_event.type_)
+          ~body:(The_event.Payload.to_yojson body)
+          ()
+        |> to_yojson
+      )
     )
 
 let rec exec_command : type arg res. t -> (module COMMAND with type Arguments.t = arg and type Result.t = res) -> arg -> res Lwt.t =
