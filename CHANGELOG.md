@@ -1,8 +1,12 @@
-## unreleased
+## 1.0.5 2021-01-28
 
 ### Added
 
 - Added Debug_rpc.set_progressive_command_handler
+
+### Fixed
+
+- Delay send event to after executing command to make vscode happy
 
 ## 1.0.4 (2021-01-02)
 
