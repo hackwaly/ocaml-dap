@@ -3,8 +3,9 @@ const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
 const _ = require('lodash');
+const hackSchema = require('./hack_schema');
 
-const schema = JSON.parse(Fs.readFileSync(argv._[0]));
+const schema = hackSchema(JSON.parse(Fs.readFileSync(argv._[0])));
 
 function resolveDef(def) {
   if (def != null && def.$ref) {

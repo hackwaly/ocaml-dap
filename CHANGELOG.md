@@ -1,3 +1,9 @@
+## 1.0.6 2021-02-22
+
+### Added
+
+- Added Variable#__vscodeVariableMenuContext property.
+
 ## 1.0.5 2021-01-28
 
 ### Added

@@ -442,6 +442,7 @@ module Variable : sig
     The client can use this optional information to present the children in a paged UI and fetch them in chunks. *)
     memory_reference : string option [@key "memoryReference"] [@default None]; (** Optional memory reference for the variable if the variable represents executable code, such as a function pointer.
     This attribute is only required if the client has passed the value true for the 'supportsMemoryReferences' capability of the 'initialize' request. *)
+    __vscode_variable_menu_context : string option [@key "__vscodeVariableMenuContext"] [@default None];
   }
   [@@deriving make, yojson {strict = false}]
 end
