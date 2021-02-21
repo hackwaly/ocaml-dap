@@ -1,3 +1,9 @@
+## unreleased
+
+### Added
+
+- Added Error_with_message exception.
+
 ## 1.0.6 2021-02-22
 
 ### Added

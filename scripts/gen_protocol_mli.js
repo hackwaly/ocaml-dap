@@ -121,6 +121,14 @@ function genType(def, prop, parentDef) {
       return `${modId}.t`;
     } else {
       const modId = toOcamlName(prop, true);
+      if (currentTypeModuleName === 'Error_response') {
+        if (modId === 'Message') {
+          return 'Response.Message.t';
+        }
+        if (modId === 'Type') {
+          return 'Response.Type.t';
+        }
+      }
       emitLocalModule(modId, (emit) => {
         emitTypeDecl(emit, def);
       });
@@ -193,16 +201,22 @@ function emitTypeDecl(emit, def, {generic, isEmitTypeModule} = {}) {
   } else if (def.type === 'object' || def.allOf != null) {
     let objDef = def;
     if (def.allOf != null) {
-      const def1 = resolveDef(def.allOf[0]);
-      const def2 = resolveDef(def.allOf[1]);
-      objDef = {
-        type: 'object',
-        properties: {
-          ...def1.properties,
-          ...def2.properties,
-        },
-        required: _.union(def1.required, def2.required),
+      const merge = (def1, def2) => {
+        def1 = resolveDef(def1);
+        def2 = resolveDef(def2);
+        if (def1.allOf != null) {
+          def1 = merge(def1.allOf[0], def1.allOf[1]);
+        }
+        return {
+          type: 'object',
+          properties: {
+            ...def1.properties,
+            ...def2.properties,
+          },
+          required: _.union(def1.required, def2.required),
+        };
       };
+      objDef = merge(def.allOf[0], def.allOf[1]);
     }
     emit(` {\n`);
     withIndent(emit, (emit) => {

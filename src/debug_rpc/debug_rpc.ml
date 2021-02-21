@@ -14,6 +14,8 @@ type t = {
   out_mutex : Lwt_mutex.t;
 }
 
+exception Error_with_message of Message.t
+
 type progress = <
   start : unit -> unit Lwt.t;
   update : int -> int -> unit Lwt.t;
@@ -120,36 +122,40 @@ let set_progressive_command_handler : type arg res. t -> (module COMMAND with ty
   fun rpc (module The_command) f ->
     let handler rpc (req : Request.t) _raw_msg =
       Lwt_mutex.with_lock rpc.out_mutex (fun () ->
-        let%lwt res =
-          try%lwt
-            let progress = new c_progress rpc (Some req.seq) The_command.type_ in
-            let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) progress in
-            Lwt.return (Response.make
-              ~seq:(next_seq rpc)
-              ~type_:Response.Type.Response
-              ~request_seq:req.seq
-              ~success:true
-              ~command:The_command.type_
-              ~body:(The_command.Result.to_yojson res)
-              ()
-            )
-          with exn ->
-            Log.warn (fun m -> m "Uncaught_exc %s %s" (Printexc.to_string exn) (Printexc.get_backtrace ()));%lwt
-            Lwt.return (Response.make
-              ~seq:(next_seq rpc)
-              ~type_:Response.Type.Response
-              ~request_seq:req.seq
-              ~success:false
-              ~command:The_command.type_
-              ~message:(Some (
-                match exn with
-                | Lwt.Canceled -> Response.Message.Cancelled
-                | _ -> Response.Message.Custom (Printexc.to_string exn)
-              ))
-              ()
-            )
-        in
-        send_message rpc (res |> Response.to_yojson)
+        try%lwt
+          let progress = new c_progress rpc (Some req.seq) The_command.type_ in
+          let%lwt res = f (The_command.Arguments.of_yojson req.arguments |> Result.get_ok) progress in
+          let res = Response.make
+            ~seq:(next_seq rpc)
+            ~type_:Response.Type.Response
+            ~request_seq:req.seq
+            ~success:true
+            ~command:The_command.type_
+            ~body:(The_command.Result.to_yojson res)
+            ()
+          in
+          send_message rpc (res |> Response.to_yojson)
+        with exn ->
+          let message = match exn with
+            | Error_with_message message -> Some message
+            | _ -> None
+          in
+          Log.warn (fun m -> m "Uncaught_exc %s %s" (Printexc.to_string exn) (Printexc.get_backtrace ()));%lwt
+          let res = Error_response.make
+            ~seq:(next_seq rpc)
+            ~type_:Response.Type.Response
+            ~request_seq:req.seq
+            ~success:false
+            ~command:The_command.type_
+            ~message:(Some (
+              match exn with
+              | Lwt.Canceled -> Response.Message.Cancelled
+              | _ -> Response.Message.Custom (Printexc.to_string exn)
+            ))
+            ~body:(Error_response.Body.make ~error:message ())
+            ()
+          in
+          send_message rpc (res |> Error_response.to_yojson)
       )
     in
     Hashtbl.replace rpc.handlers The_command.type_ handler

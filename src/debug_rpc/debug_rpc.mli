@@ -5,6 +5,9 @@ val log_src : Logs.Src.t
 type t
 (** The type of rpc connection *)
 
+exception Error_with_message of Message.t
+(** The exception used to represent command execution is failed with [Message.t] *)
+
 type progress = <
   start : unit -> unit Lwt.t;
   update : int -> int -> unit Lwt.t;

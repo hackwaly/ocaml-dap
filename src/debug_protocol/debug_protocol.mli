@@ -122,6 +122,16 @@ module Error_response : sig
   end
 
   type t = {
+    seq : int; (** Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request. *)
+    type_ : Response.Type.t [@key "type"];
+    request_seq : int; (** Sequence number of the corresponding request. *)
+    success : bool; (** Outcome of the request.
+    If true, the request was successful and the 'body' attribute may contain the result of the request.
+    If the value is false, the attribute 'message' contains the error in short form and the 'body' may contain additional information (see 'ErrorResponse.body.error'). *)
+    command : string; (** The command requested. *)
+    message : Response.Message.t option [@default None]; (** Contains the raw error in short form if 'success' is false.
+    This raw error might be interpreted by the frontend and is not shown in the UI.
+    Some predefined values exist. *)
     body : Body.t;
   }
   [@@deriving make, yojson {strict = false}]

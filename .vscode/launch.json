@@ -17,7 +17,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/scripts/gen_dap_dot_ml.js",
+            "program": "${workspaceFolder}/scripts/gen_protocol_ml.js",
             "args": ["${workspaceFolder}/debugAdapterProtocol.json"]
         }
     ]
