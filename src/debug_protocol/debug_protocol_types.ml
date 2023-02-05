@@ -127,3 +127,5 @@ module String_dict = Dict.Make (struct
 module String_opt_dict = Dict.Make (struct
     type t = string option [@@deriving yojson]
   end)
+
+module Any_dict = Dict.Make (Any)
