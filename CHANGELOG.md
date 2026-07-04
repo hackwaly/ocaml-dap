@@ -2,6 +2,10 @@
 
 ### Added
 
+- Updated the bundled schema to the latest Debug Adapter Protocol snapshot
+  (spec 1.71). Adds the `outputPresentation` field on `StartDebugging` and
+  refreshes documentation across the generated types. Builds on the schema
+  update and generator consolidation from hackwaly/ocaml-dap#3.
 - Added Error_with_message exception.
 
 ## 1.0.6 2021-02-22

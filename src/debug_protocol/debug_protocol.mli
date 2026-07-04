@@ -225,7 +225,7 @@ module Capabilities : sig
     supports_goto_targets_request : bool option [@key "supportsGotoTargetsRequest"] [@default None]; (** The debug adapter supports the `gotoTargets` request. *)
     supports_step_in_targets_request : bool option [@key "supportsStepInTargetsRequest"] [@default None]; (** The debug adapter supports the `stepInTargets` request. *)
     supports_completions_request : bool option [@key "supportsCompletionsRequest"] [@default None]; (** The debug adapter supports the `completions` request. *)
-    completion_trigger_characters : string list option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the `.` character. *)
+    completion_trigger_characters : string list option [@key "completionTriggerCharacters"] [@default None]; (** The set of characters that should automatically trigger a completion request in a REPL. If not specified, the client should assume the `.` character. The client may trigger additional completion requests on characters such as ones that make up common identifiers, or as otherwise requested by a user. *)
     supports_modules_request : bool option [@key "supportsModulesRequest"] [@default None]; (** The debug adapter supports the `modules` request. *)
     additional_module_columns : Column_descriptor.t list option [@key "additionalModuleColumns"] [@default None]; (** The set of additional module information exposed by the debug adapter. *)
     supported_checksum_algorithms : Checksum_algorithm.t list option [@key "supportedChecksumAlgorithms"] [@default None]; (** Checksum algorithms supported by the debug adapter. *)
@@ -875,7 +875,7 @@ module Continued_event : sig
   module Payload : sig
     type t = {
       thread_id : int [@key "threadId"]; (** The thread which was continued. *)
-      all_threads_continued : bool option [@key "allThreadsContinued"] [@default None]; (** If `allThreadsContinued` is true, a debug adapter can announce that all threads have continued. *)
+      all_threads_continued : bool option [@key "allThreadsContinued"] [@default None]; (** If omitted or set to `true`, this event signals to the client that all threads have been resumed. The value `false` indicates that not all threads were resumed. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1091,7 +1091,7 @@ module Progress_start_event : sig
       So this property basically controls whether the client should use UX that supports cancellation.
       Clients that don't support cancellation are allowed to ignore the setting. *)
       message : string option [@default None]; (** More detailed progress message. *)
-      percentage : float option [@default None]; (** Progress percentage to display (value range: 0 to 100). If omitted no percentage is shown. *)
+      percentage : float option [@default None]; (** Progress percentage to display. If omitted no percentage is shown. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1104,7 +1104,7 @@ module Progress_update_event : sig
     type t = {
       progress_id : string [@key "progressId"]; (** The ID that was introduced in the initial `progressStart` event. *)
       message : string option [@default None]; (** More detailed progress message. If omitted, the previous message (if any) is used. *)
-      percentage : float option [@default None]; (** Progress percentage to display (value range: 0 to 100). If omitted no percentage is shown. *)
+      percentage : float option [@default None]; (** Progress percentage to display. If omitted no percentage is shown. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1206,7 +1206,7 @@ module Run_in_terminal_command : sig
     type t = {
       kind : Kind.t option [@default None]; (** What kind of terminal to launch. Defaults to `integrated` if not specified. *)
       title : string option [@default None]; (** Title of the terminal. *)
-      cwd : string; (** Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command. *)
+      cwd : string; (** Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command. If `pathFormat` is set to `uri` in the `InitializeRequestArguments`, this must be a file URI. *)
       args : string list; (** List of arguments. The first argument is the command to run. *)
       env : Env.t option [@default None]; (** Environment key-value pairs that are added to or removed from the default environment. *)
       args_can_be_interpreted_by_shell : bool option [@key "argsCanBeInterpretedByShell"] [@default None]; (** This property should only be set if the corresponding capability `supportsArgsCanBeInterpretedByShell` is true. If the client uses an intermediary shell to launch the application, then the client must not attempt to escape characters with special meanings for the shell. The user is fully responsible for escaping as needed and that arguments using special characters may not be portable across shells. *)
@@ -1216,8 +1216,8 @@ module Run_in_terminal_command : sig
 
   module Result : sig
     type t = {
-      process_id : int option [@key "processId"] [@default None]; (** The process ID. The value should be less than or equal to 2147483647 (2^31-1). *)
-      shell_process_id : int option [@key "shellProcessId"] [@default None]; (** The process ID of the terminal shell. The value should be less than or equal to 2147483647 (2^31-1). *)
+      process_id : int option [@key "processId"] [@default None]; (** The process ID. *)
+      shell_process_id : int option [@key "shellProcessId"] [@default None]; (** The process ID of the terminal shell. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1236,6 +1236,15 @@ module Start_debugging_command : sig
       [@@deriving yojson]
     end
 
+    module Output_presentation : sig
+      (** Hints whether output of the child sessions should be presented separately or merged with that of the parent session's. *)
+      type t =
+        | Separate [@name "separate"]
+        | Merge_with_parent [@name "mergeWithParent"]
+
+      include JSONABLE with type t := t
+    end
+
     module Request : sig
       (** Indicates whether the new debug session should be started with a `launch` or `attach` request. *)
       type t =
@@ -1248,6 +1257,7 @@ module Start_debugging_command : sig
     (** Arguments for `startDebugging` request. *)
     type t = {
       configuration : Configuration.t; (** Arguments passed to the new debug session. The arguments must only contain properties understood by the `launch` or `attach` requests of the debug adapter and they must not contain any client-specific properties (e.g. `type`) or client-specific features (e.g. substitutable 'variables'). *)
+      output_presentation : Output_presentation.t option [@key "outputPresentation"] [@default None]; (** Hints whether output of the child sessions should be presented separately or merged with that of the parent session's. *)
       request : Request.t; (** Indicates whether the new debug session should be started with a `launch` or `attach` request. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1625,7 +1635,7 @@ module Continue_command : sig
 
   module Result : sig
     type t = {
-      all_threads_continued : bool option [@key "allThreadsContinued"] [@default None]; (** The value true (or a missing property) signals to the client that all threads have been resumed. The value false indicates that not all threads were resumed. *)
+      all_threads_continued : bool option [@key "allThreadsContinued"] [@default None]; (** If omitted or set to `true`, this response signals to the client that all threads have been resumed. The value `false` indicates that not all threads were resumed. *)
     }
     [@@deriving make, yojson {strict = false}]
   end
@@ -1818,7 +1828,7 @@ module Stack_trace_command : sig
       thread_id : int [@key "threadId"]; (** Retrieve the stacktrace for this thread. *)
       start_frame : int option [@key "startFrame"] [@default None]; (** The index of the first frame to return; if omitted frames start at 0. *)
       levels : int option [@default None]; (** The maximum number of frames to return. If levels is not specified or 0, all frames are returned. *)
-      format : Stack_frame_format.t option [@default None]; (** Specifies details on how to format the stack frames.
+      format : Stack_frame_format.t option [@default None]; (** Specifies details on how to format the returned `StackFrame.name`. The debug adapter may format requested details in any way that would make sense to a developer.
       The attribute is only honored by a debug adapter if the corresponding capability `supportsValueFormattingOptions` is true. *)
     }
     [@@deriving make, yojson {strict = false}]
@@ -1873,9 +1883,9 @@ module Variables_command : sig
     type t = {
       variables_reference : int [@key "variablesReference"]; (** The variable for which to retrieve its children. The `variablesReference` must have been obtained in the current suspended state. See 'Lifetime of Object References' in the Overview section for details. *)
       filter : Filter.t option [@default None]; (** Filter to limit the child variables to either named or indexed. If omitted, both types are fetched. *)
-      start : int option [@default None]; (** The index of the first variable to return; if omitted children start at 0.
+      start : int option [@default None]; (** The index of the first variable to return; if omitted children start at 0. If the value of `start` exceeeds the number of available variables, the debug adapter should return an empty array.
       The attribute is only honored by a debug adapter if the corresponding capability `supportsVariablePaging` is true. *)
-      count : int option [@default None]; (** The number of variables to return. If count is missing or 0, all variables are returned.
+      count : int option [@default None]; (** The number of variables to return. If count is missing or 0, all variables are returned. If fewer than `count` variables are returned, the client should assume no further variables are available.
       The attribute is only honored by a debug adapter if the corresponding capability `supportsVariablePaging` is true. *)
       format : Value_format.t option [@default None]; (** Specifies details on how to format the Variable values.
       The attribute is only honored by a debug adapter if the corresponding capability `supportsValueFormattingOptions` is true. *)
