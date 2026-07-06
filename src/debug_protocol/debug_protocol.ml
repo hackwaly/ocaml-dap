@@ -1778,8 +1778,21 @@ module Restart_command = struct
   let type_ = "restart"
 
   module Arguments = struct
-    type t = Empty_dict.t
-    [@@deriving yojson]
+    module Arguments = struct
+      type t = {
+        no_debug : bool option [@key "noDebug"] [@default None]; (** If true, the launch request should launch the program without enabling debugging. *)
+        __restart : Any.t option [@default None]; (** Arbitrary data from the previous, restarted session.
+        The data is sent as the `restart` attribute of the `terminated` event.
+        The client should leave the data intact. *)
+      }
+      [@@deriving make, yojson {strict = false}]
+    end
+
+    (** Arguments for `restart` request. *)
+    type t = {
+      arguments : Arguments.t option [@default None];
+    }
+    [@@deriving make, yojson {strict = false}]
   end
 
   module Result = struct

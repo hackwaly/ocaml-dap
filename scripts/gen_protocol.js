@@ -5,13 +5,12 @@ const argv = yargs(hideBin(process.argv)).argv
 const _ = require('lodash');
 
 function hackRestartRequestArguments(schema) {
-  const args = schema.definitions.RestartArguments;
-  delete schema.definitions.RestartArguments;
-  args.properties.arguments = {
-    type: 'object',
-    properties: schema.definitions.LaunchRequestArguments.properties
+  schema.definitions.RestartArguments.properties = {
+    arguments: {
+      type: 'object',
+      properties: schema.definitions.LaunchRequestArguments.properties
+    }
   };
-  schema.definitions.RestartRequestArguments = args;
 }
 
 function hackSchema(schema) {
