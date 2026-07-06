@@ -88,7 +88,8 @@ let%expect_test "exec_command" =
   Format.printf "bar: %s\n" res.bar;
   [%expect {|
     foo: 1000
-    bar: 2000 |}]
+    bar: 2000 |}];
+  Lwt.return ()
 
 let%expect_test "cancellation" =
   let client_rpc, server_rpc = create_rpc_pair () in
@@ -138,7 +139,8 @@ let%expect_test "cancellation" =
     3
     1
     2
-    5 |}]
+    5 |}];
+  Lwt.return ()
 
 let%expect_test "send_event" =
   let client_rpc, server_rpc = create_rpc_pair () in
@@ -170,4 +172,21 @@ let%expect_test "send_event" =
     1
     2
     3
-    4 |}]
+    4 |}];
+  Lwt.return ()
+
+(* Regression test for the [RestartArguments] schema hack in
+   scripts/gen_protocol.js. A `restart` request carries the updated launch /
+   attach configuration in its `arguments` field. If the hack fails to enrich
+   the referenced [RestartArguments] definition, the generator falls back to
+   [Empty_dict.t], whose [of_yojson] only accepts `{}` — so any real restart
+   payload fails to deserialize. This test round-trips such a payload and thus
+   fails (Error) against the buggy generator and passes against the fixed one. *)
+let%expect_test "restart request preserves its arguments payload" =
+  let open Debug_protocol.Restart_command in
+  let json = Yojson.Safe.from_string {|{ "arguments": { "noDebug": true } }|} in
+  (match Arguments.of_yojson json with
+   | Ok args -> Format.printf "%s\n" (Yojson.Safe.to_string (Arguments.to_yojson args))
+   | Error e -> Format.printf "ERROR: %s\n" e);
+  [%expect {| {"arguments":{"noDebug":true}} |}];
+  Lwt.return ()

@@ -14,6 +14,7 @@ depends: [
   "ocaml" {>= "4.08"}
   "dune" {>= "2.7"}
   "yojson"
+  "fmt"
   "ppx_here"
   "ppx_deriving"
   "ppx_deriving_yojson"

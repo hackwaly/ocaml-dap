@@ -7,11 +7,11 @@
 (rule
   (target debug_protocol.ml)
   (mode (promote (until-clean)))
-  (deps (:json ../../debugAdapterProtocol.json) ../../scripts/gen_protocol_ml.js)
-  (action (with-stdout-to %{target} (run node ../../scripts/gen_protocol_ml.js -- %{json}))))
+  (deps (:json ../../debugAdapterProtocol.json) (:script ../../scripts/gen_protocol.js))
+  (action (with-stdout-to %{target} (run node %{script} -- ml %{json}))))
 
 (rule
   (target debug_protocol.mli)
   (mode (promote (until-clean)))
-  (deps (:json ../../debugAdapterProtocol.json) ../../scripts/gen_protocol_mli.js)
-  (action (with-stdout-to %{target} (run node ../../scripts/gen_protocol_mli.js -- %{json}))))
+  (deps (:json ../../debugAdapterProtocol.json) (:script ../../scripts/gen_protocol.js))
+  (action (with-stdout-to %{target} (run node %{script} -- mli %{json}))))

@@ -3,4 +3,4 @@
  (inline_tests)
  (preprocess
   (pps ppx_expect ppx_deriving.make ppx_deriving_yojson lwt_ppx))
- (libraries debug_protocol debug_rpc lwt lwt.unix lwt_react logs logs.cli react fmt logs.fmt))
+ (libraries debug_protocol debug_rpc lwt lwt.unix lwt_react logs logs.fmt react fmt))
