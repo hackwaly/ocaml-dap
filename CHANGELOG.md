@@ -6,6 +6,9 @@
   (spec 1.71). Adds the `outputPresentation` field on `StartDebugging` and
   refreshes documentation across the generated types. Builds on the schema
   update and generator consolidation from hackwaly/ocaml-dap#3.
+- Generated the `arguments` field on the `restart` request
+  (`Restart_command.Arguments`) so it carries the latest launch/attach
+  configuration instead of an empty object.
 - Added Error_with_message exception.
 
 ## 1.0.6 2021-02-22
