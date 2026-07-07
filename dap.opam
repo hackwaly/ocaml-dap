@@ -17,7 +17,7 @@ depends: [
   "ppx_here"
   "ppx_deriving"
   "ppx_deriving_yojson"
-  "ppx_expect" {with-test & >= v0.16}
+  "ppx_expect" {with-test & >= "v0.16"}
   "lwt"
   "lwt_ppx" {>= "2.0.1"}
   "lwt_react"
