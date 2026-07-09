@@ -1,0 +1,82 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * *"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          # minimum supported: library only (expect tests need >= 4.14).
+          # full name + archive repo (below): < 4.11 lives in opam-repository-archive.
+          - ocaml-base-compiler.4.08.1
+          - 4.14.x
+          - 5.4.x
+        include:
+          # The expect-test harness uses the ppx_expect >= v0.16 `IO` API,
+          # which requires OCaml >= 4.14, so tests only run on these versions.
+          - ocaml-compiler: 4.14.x
+            run-tests: true
+          - ocaml-compiler: 5.4.x
+            run-tests: true
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          lfs: true # https://github.com/ocaml/setup-ocaml/issues/895#issuecomment-2477062336
+
+      - name: Set up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          # archive holds the pre-4.11 compilers; default must be listed explicitly.
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            archive: https://github.com/ocaml/opam-repository-archive.git
+
+      # debug_protocol.ml/.mli are code-generated at build time by
+      # scripts/gen_protocol.js, which needs Node and the npm packages pinned
+      # in yarn.lock (yargs, lodash). Only the test legs run a non-release
+      # `dune build` that re-invokes the generator; the 4.08 release build
+      # (`dune build -p dap`) ignores promoted rules and uses the committed
+      # sources, so it needs neither Node nor the test dependencies.
+      - name: Set up Node.js
+        if: ${{ matrix.run-tests }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install JS dependencies (protocol generator)
+        if: ${{ matrix.run-tests }}
+        run: yarn install --frozen-lockfile
+
+      - name: Install OCaml dependencies (with tests)
+        if: ${{ matrix.run-tests }}
+        run: opam install . --deps-only --with-test
+
+      - name: Install OCaml dependencies (library only)
+        run: opam install . --deps-only
+
+      - name: Build library
+        run: opam exec -- dune build -p dap
+
+      - name: Build and run tests
+        if: ${{ matrix.run-tests }}
+        run: opam exec -- dune runtest

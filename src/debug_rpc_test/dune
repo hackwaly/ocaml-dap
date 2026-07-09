@@ -1,5 +1,9 @@
 (library
  (name debug_rpc_test)
+ ; The expect-test harness uses the ppx_expect >= v0.16 `IO` API, which needs
+ ; OCaml >= 4.14; disable the tests below that so `dune build` on 4.11 doesn't
+ ; require ppx_expect.
+ (enabled_if (>= %{ocaml_version} 4.14.0))
  (inline_tests)
  (preprocess
   (pps ppx_expect ppx_deriving.make ppx_deriving_yojson lwt_ppx))

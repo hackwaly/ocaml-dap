@@ -14,18 +14,21 @@ depends: [
   "ocaml" {>= "4.08"}
   "dune" {>= "2.7"}
   "yojson"
-  "fmt"
   "ppx_here"
   "ppx_deriving"
   "ppx_deriving_yojson"
-  "ppx_expect"
+  "ppx_expect" {with-test & >= "v0.16"}
   "lwt"
-  "lwt_ppx"
+  "lwt_ppx" {>= "2.0.1"}
   "lwt_react"
   "react"
   "angstrom"
   "angstrom-lwt-unix"
   "logs"
+  "fmt" {with-test}
+]
+conflicts: [
+  "result" {< "1.5"}
 ]
 build: [
   ["dune" "subst"] {pinned}
